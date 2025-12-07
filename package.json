@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
+    "build": "bun run --bun next build",
     "check": "next lint && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "dev": "next dev --turbo",
+    "dev": "bun run --bun next dev",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "lint": "next lint",
@@ -27,10 +27,10 @@
     "@trpc/server": "^11.0.0",
     "drizzle-orm": "^0.41.0",
     "ipx": "^3.1.1",
-    "next": "^15.2.3",
+    "next": "16.0.7",
     "postgres": "^3.4.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
     "server-only": "^0.0.1",
     "superjson": "^2.2.1",
     "zod": "^3.24.2"
@@ -39,11 +39,11 @@
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.0.15",
     "@types/node": "^20.14.10",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "drizzle-kit": "^0.30.5",
     "eslint": "^9.23.0",
-    "eslint-config-next": "^15.2.3",
+    "eslint-config-next": "16.0.7",
     "eslint-plugin-drizzle": "^0.2.3",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
@@ -54,5 +54,9 @@
   },
   "ct3aMetadata": {
     "initVersion": "7.40.0"
+  },
+  "overrides": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3"
   }
 }
