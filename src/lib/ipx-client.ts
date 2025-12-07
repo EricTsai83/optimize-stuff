@@ -1,3 +1,4 @@
+import path from "path";
 import { createIPX, ipxFSStorage, ipxHttpStorage } from "ipx";
 
 /**
@@ -8,7 +9,10 @@ import { createIPX, ipxFSStorage, ipxHttpStorage } from "ipx";
  * - HTTP 遠端圖片（可配置允許的域名）
  */
 export const ipx = createIPX({
-  storage: ipxFSStorage({ dir: "./public" }),
+  alias: {
+    optstuff: "https://optstuff.vercel.app",
+  },
+  storage: ipxFSStorage({ dir: path.join(process.cwd(), "public") }),
   httpStorage: ipxHttpStorage({
     // 允許所有域名，生產環境可限制為特定域名
     allowAllDomains: true,
