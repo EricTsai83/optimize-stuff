@@ -2,16 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { ipx } from "@/lib/ipx-client";
-import {
-  buildBlurPlaceholderOperations,
-  buildOperations,
-  encodeDataUrl,
-  ensureUint8Array,
-  hasOperationParams,
-  PLACEHOLDER_ONLY_PARAMS,
-  PLACEHOLDER_PARAM,
-  PLACEHOLDER_TYPE_BLUR,
-} from "@/lib/image-operations";
+
+/**
+ * 確保資料為 Uint8Array 格式
+ */
+function ensureUint8Array(data: unknown): Uint8Array {
+  if (data instanceof Uint8Array) {
+    return data;
+  }
+  if (data instanceof ArrayBuffer) {
+    return new Uint8Array(data);
+  }
+  if (Buffer.isBuffer(data)) {
+    return new Uint8Array(data);
+  }
+  throw new Error("Unsupported data type for image processing");
+}
 
 /**
  * 恢復 URL 中被折疊的協議雙斜線
@@ -22,30 +28,6 @@ function restoreProtocolSlashes(path: string): string {
 }
 
 /**
- * 從路徑參數中解析圖片路徑
- */
-function parseImagePath(pathSegments: string[]): string {
-  if (pathSegments.length === 0) {
-    return "";
-  }
-
-  let imagePath = pathSegments.join("/");
-
-  // 移除開頭的 "_/"（IPX URL 格式中表示無操作）
-  if (imagePath.startsWith("_/")) {
-    imagePath = imagePath.slice(2);
-  }
-
-  // 解碼 URL 編碼字符
-  imagePath = decodeURIComponent(imagePath);
-
-  // 恢復協議中的雙斜線
-  imagePath = restoreProtocolSlashes(imagePath);
-
-  return imagePath;
-}
-
-/**
  * 根據圖片格式解析 Content-Type
  */
 function resolveContentType(format: string): string {
@@ -53,155 +35,156 @@ function resolveContentType(format: string): string {
 }
 
 /**
- * 從 URL 中移除 placeholder 專用參數
+ * 解析 IPX 路徑格式
+ *
+ * 格式: /api/optimize/{operations}/{image_path}
+ *
+ * @example
+ * - /api/optimize/w_200/https://example.com/image.jpg
+ *   => { operations: "w_200", imagePath: "https://example.com/image.jpg" }
+ *
+ * - /api/optimize/embed,f_webp,s_200x200/https://example.com/image.jpg
+ *   => { operations: "embed,f_webp,s_200x200", imagePath: "https://example.com/image.jpg" }
+ *
+ * - /api/optimize/_/https://example.com/image.jpg
+ *   => { operations: "_", imagePath: "https://example.com/image.jpg" }
  */
-function removePlaceholderParamsFromUrl(url: URL): string {
-  const normalizedUrl = new URL(url.href);
-  for (const param of PLACEHOLDER_ONLY_PARAMS) {
-    normalizedUrl.searchParams.delete(param);
+function parseIpxPath(pathSegments: string[]): {
+  readonly operations: string;
+  readonly imagePath: string;
+} | null {
+  if (pathSegments.length < 2) {
+    return null;
   }
-  return normalizedUrl.href;
+
+  // 第一段是操作參數
+  const operations = pathSegments[0]!;
+
+  // 剩餘部分組合成圖片路徑
+  let imagePath = pathSegments.slice(1).join("/");
+
+  // 解碼 URL 編碼字符
+  imagePath = decodeURIComponent(imagePath);
+
+  // 恢復協議中的雙斜線
+  imagePath = restoreProtocolSlashes(imagePath);
+
+  return { operations, imagePath };
+}
+
+/**
+ * 將 IPX URL 格式的操作字串轉換為操作物件
+ *
+ * @example
+ * - "w_200" => { width: "200" }
+ * - "embed,f_webp,s_200x200" => { fit: "embed", format: "webp", resize: "200x200" }
+ * - "_" => {}
+ */
+function parseOperationsString(
+  operationsStr: string,
+): Record<string, string | boolean> {
+  // "_" 表示無操作
+  if (operationsStr === "_") {
+    return {};
+  }
+
+  const operations: Record<string, string | boolean> = {};
+  const parts = operationsStr.split(",");
+
+  for (const part of parts) {
+    // 處理有值的操作 (如 w_200, f_webp)
+    const underscoreIndex = part.indexOf("_");
+
+    if (underscoreIndex > 0) {
+      const key = part.slice(0, underscoreIndex);
+      const value = part.slice(underscoreIndex + 1);
+      operations[key] = value;
+    } else {
+      // 處理無值的操作 (如 flip, flop, grayscale, embed)
+      operations[part] = true;
+    }
+  }
+
+  return operations;
 }
 
 /**
  * 圖片優化 API Route Handler
  *
- * 支援的功能：
- * - 圖片格式轉換 (webp, avif, jpeg, png 等)
- * - 尺寸調整 (寬度、高度、resize)
- * - 品質控制
- * - 模糊預覽圖生成 (placeholder=blur)
- * - 各種圖片效果 (模糊、銳化、旋轉等)
+ * 使用 IPX 原生 URL 格式：
+ * /api/optimize/{operations}/{image_path}
  *
  * @example
- * // 基本使用
- * /api/optimize/https://example.com/image.jpg?w=800&q=80
+ * // 設定寬度 200px
+ * /api/optimize/w_200/https://example.com/image.jpg
  *
- * // 生成模糊預覽圖
- * /api/optimize/https://example.com/image.jpg?placeholder=blur
+ * // 轉換為 WebP 格式
+ * /api/optimize/f_webp/https://example.com/image.jpg
  *
- * // 取得 JSON 格式的預覽圖資料
- * /api/optimize/https://example.com/image.jpg?placeholder=blur&format=json
+ * // 自動格式（根據瀏覽器支援）
+ * /api/optimize/f_auto/https://example.com/image.jpg
+ *
+ * // 組合操作：embed fit、WebP 格式、200x200 尺寸
+ * /api/optimize/embed,f_webp,s_200x200/https://example.com/image.jpg
+ *
+ * // 無操作，直接取得原圖
+ * /api/optimize/_/https://example.com/image.jpg
+ *
+ * // 更多操作組合
+ * /api/optimize/w_800,q_80,f_webp/https://example.com/image.jpg
+ * /api/optimize/s_400x300,fit_cover,f_avif/https://example.com/image.jpg
+ * /api/optimize/blur_5,grayscale/https://example.com/image.jpg
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ): Promise<Response> {
   const resolvedParams = await params;
-  const requestUrl = new URL(request.url);
   let imagePath: string | undefined;
 
   try {
-    imagePath = parseImagePath(resolvedParams.path);
+    const parsed = parseIpxPath(resolvedParams.path);
 
-    if (!imagePath) {
+    if (!parsed) {
       return NextResponse.json(
-        { error: "Missing image path" },
+        {
+          error: "Invalid path format",
+          usage: "/api/optimize/{operations}/{image_url}",
+          examples: [
+            "/api/optimize/w_200/https://example.com/image.jpg",
+            "/api/optimize/f_webp,q_80/https://example.com/image.jpg",
+            "/api/optimize/_/https://example.com/image.jpg",
+          ],
+        },
         { status: 400 },
       );
     }
 
-    const placeholderType = requestUrl.searchParams.get(PLACEHOLDER_PARAM);
+    imagePath = parsed.imagePath;
+    const operations = parseOperationsString(parsed.operations);
 
-    // 處理模糊預覽圖請求
-    if (placeholderType === PLACEHOLDER_TYPE_BLUR) {
-      const placeholderOperations = buildBlurPlaceholderOperations(
-        requestUrl.searchParams,
-      );
-
-      const placeholderResult = await ipx(
-        imagePath,
-        placeholderOperations,
-      ).process();
-
-      const placeholderData = ensureUint8Array(placeholderResult.data);
-      const placeholderMimeType = resolveContentType(
-        placeholderResult.format ?? placeholderOperations.format,
-      );
-
-      // 檢查是否需要 JSON 格式的回應
-      const wantJson = requestUrl.searchParams.get("format") === "json";
-
-      if (wantJson) {
-        const placeholderDataUrl = encodeDataUrl(
-          placeholderData,
-          placeholderMimeType,
-        );
-        const optimizedImageUrl = removePlaceholderParamsFromUrl(requestUrl);
-
-        return NextResponse.json(
-          {
-            type: PLACEHOLDER_TYPE_BLUR,
-            placeholderDataUrl,
-            optimizedImageUrl,
-            placeholderWidth: Number.parseInt(placeholderOperations.width, 10),
-            placeholderQuality: Number.parseInt(
-              placeholderOperations.quality,
-              10,
-            ),
-            blurSigma: Number.parseInt(placeholderOperations.blur, 10),
-          },
-          { status: 200 },
-        );
-      }
-
-      // 預設直接返回模糊圖片
-      return new Response(placeholderData as Uint8Array<ArrayBuffer>, {
-        status: 200,
-        headers: {
-          "Content-Type": placeholderMimeType,
-          "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
-        },
-      });
-    }
-
-    // 處理無操作參數的情況
-    if (!hasOperationParams(requestUrl.searchParams)) {
-      const processedImage = await ipx(imagePath, {}).process();
-      const imageData = ensureUint8Array(processedImage.data);
-      const contentType = resolveContentType(processedImage.format ?? "webp");
-
-      return new Response(imageData as Uint8Array<ArrayBuffer>, {
-        status: 200,
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
-        },
-      });
-    }
-
-    // 處理有操作參數的圖片優化
-    const operations = buildOperations(requestUrl.searchParams);
+    // 使用 IPX 處理圖片
     const processedImage = await ipx(imagePath, operations).process();
     const imageData = ensureUint8Array(processedImage.data);
-    const contentType = resolveContentType(
-      processedImage.format ?? operations.format ?? "webp",
-    );
+    const contentType = resolveContentType(processedImage.format ?? "webp");
 
     return new Response(imageData as Uint8Array<ArrayBuffer>, {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   } catch (error) {
     console.error("Image processing error:", error);
 
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorStack = error instanceof Error ? error.stack : undefined;
-
-    console.error("Error details:", {
-      message: errorMessage,
-      stack: errorStack,
-      imagePath,
-      placeholderType: requestUrl.searchParams.get(PLACEHOLDER_PARAM),
-    });
 
     return NextResponse.json(
       {
         error: "Image processing failed",
         details: errorMessage,
+        imagePath,
       },
       { status: 500 },
     );
