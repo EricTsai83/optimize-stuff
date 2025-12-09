@@ -1,9 +1,7 @@
 import "@/styles/globals.css";
-
 import { type Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
-import "@/styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {

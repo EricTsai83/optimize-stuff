@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Copy, Check } from "lucide-react"
+import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Copy, Check } from "lucide-react";
 
 const codeExamples = {
   url: `// Simple URL-based API
@@ -36,46 +36,57 @@ module.exports = {
 export default function optixLoader({ src, width, quality }) {
   return \`https://optix.io/s_\${width},q_\${quality || 80},f_webp/\${src}\`
 }`,
-}
+};
 
 export function CodeExample() {
-  const [copied, setCopied] = useState(false)
-  const [activeTab, setActiveTab] = useState("url")
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState("url");
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(codeExamples[activeTab as keyof typeof codeExamples])
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        codeExamples[activeTab as keyof typeof codeExamples],
+      );
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Optionally show error feedback to user
+      console.error("Failed to copy to clipboard");
+    }
+  };
 
   return (
-    <section id="docs" className="py-24 bg-muted/30">
+    <section id="docs" className="bg-muted/30 py-24">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-16">
-          <p className="text-accent font-medium mb-3">Integration</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Easy to integrate</h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">Works with any stack. Choose your preferred method.</p>
+        <div className="mb-16 text-center">
+          <p className="text-accent mb-3 font-medium">Integration</p>
+          <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
+            Easy to integrate
+          </h2>
+          <p className="text-muted-foreground mx-auto max-w-lg">
+            Works with any stack. Choose your preferred method.
+          </p>
         </div>
 
-        <div className="max-w-3xl mx-auto">
+        <div className="mx-auto max-w-3xl">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="flex items-center justify-between mb-4">
-              <TabsList className="h-10 rounded-full bg-muted p-1">
+            <div className="mb-4 flex items-center justify-between">
+              <TabsList className="bg-muted h-10 rounded-full p-1">
                 <TabsTrigger
                   value="url"
-                  className="rounded-full px-4 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="data-[state=active]:bg-background rounded-full px-4 text-sm data-[state=active]:shadow-sm"
                 >
                   URL API
                 </TabsTrigger>
                 <TabsTrigger
                   value="express"
-                  className="rounded-full px-4 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="data-[state=active]:bg-background rounded-full px-4 text-sm data-[state=active]:shadow-sm"
                 >
                   Express.js
                 </TabsTrigger>
                 <TabsTrigger
                   value="next"
-                  className="rounded-full px-4 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="data-[state=active]:bg-background rounded-full px-4 text-sm data-[state=active]:shadow-sm"
                 >
                   Next.js
                 </TabsTrigger>
@@ -86,25 +97,35 @@ export function CodeExample() {
                 onClick={copyCode}
                 className="text-muted-foreground hover:text-foreground"
               >
-                {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                {copied ? (
+                  <Check className="mr-2 h-4 w-4" />
+                ) : (
+                  <Copy className="mr-2 h-4 w-4" />
+                )}
                 {copied ? "Copied" : "Copy"}
               </Button>
             </div>
 
-            <div className="bg-[#18181b] rounded-2xl overflow-hidden">
+            <div className="overflow-hidden rounded-2xl bg-[#18181b]">
               <TabsContent value="url" className="mt-0">
-                <pre className="p-6 overflow-x-auto">
-                  <code className="text-sm font-mono text-[#a1a1aa]">{codeExamples.url}</code>
+                <pre className="overflow-x-auto p-6">
+                  <code className="font-mono text-sm text-[#a1a1aa]">
+                    {codeExamples.url}
+                  </code>
                 </pre>
               </TabsContent>
               <TabsContent value="express" className="mt-0">
-                <pre className="p-6 overflow-x-auto">
-                  <code className="text-sm font-mono text-[#a1a1aa]">{codeExamples.express}</code>
+                <pre className="overflow-x-auto p-6">
+                  <code className="font-mono text-sm text-[#a1a1aa]">
+                    {codeExamples.express}
+                  </code>
                 </pre>
               </TabsContent>
               <TabsContent value="next" className="mt-0">
-                <pre className="p-6 overflow-x-auto">
-                  <code className="text-sm font-mono text-[#a1a1aa]">{codeExamples.next}</code>
+                <pre className="overflow-x-auto p-6">
+                  <code className="font-mono text-sm text-[#a1a1aa]">
+                    {codeExamples.next}
+                  </code>
                 </pre>
               </TabsContent>
             </div>
@@ -112,5 +133,5 @@ export function CodeExample() {
         </div>
       </div>
     </section>
-  )
+  );
 }
