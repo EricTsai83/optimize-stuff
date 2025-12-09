@@ -69,7 +69,7 @@ export function EffectsDemo() {
               min={0}
               max={20}
               step={1}
-              className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+              className="**:[[role=slider]]:h-4 **:[[role=slider]]:w-4"
             />
           </div>
 
@@ -86,7 +86,7 @@ export function EffectsDemo() {
               min={0}
               max={10}
               step={1}
-              className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+              className="**:[[role=slider]]:h-4 **:[[role=slider]]:w-4"
             />
           </div>
 
@@ -103,7 +103,7 @@ export function EffectsDemo() {
               min={0}
               max={360}
               step={90}
-              className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+              className="**:[[role=slider]]:h-4 **:[[role=slider]]:w-4"
             />
           </div>
 
