@@ -279,33 +279,68 @@
   opacity: 0;
 }
 
-/* Add smooth crossfade animation for tab content transitions */
-@keyframes tab-content-in {
+/* Horizontal slide animations for tab content transitions */
+/* Using smaller translate values (24px) for smoother, less jarring animations */
+@keyframes tab-slide-in-from-right {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
+    transform: translateX(30%);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0);
   }
 }
 
-@keyframes tab-content-out {
+@keyframes tab-slide-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tab-slide-out-to-left {
   from {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0);
   }
   to {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    transform: translateX(-30%);
   }
 }
 
-.animate-tab-content-in {
-  animation: tab-content-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+@keyframes tab-slide-out-to-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30%);
+  }
 }
 
-.animate-tab-content-out {
-  animation: tab-content-out 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-tab-slide-in-from-right {
+  animation: tab-slide-in-from-right 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+    forwards;
+}
+
+.animate-tab-slide-in-from-left {
+  animation: tab-slide-in-from-left 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+    forwards;
+}
+
+.animate-tab-slide-out-to-left {
+  animation: tab-slide-out-to-left 0.15s cubic-bezier(0.55, 0.085, 0.68, 0.53)
+    forwards;
+}
+
+.animate-tab-slide-out-to-right {
+  animation: tab-slide-out-to-right 0.15s cubic-bezier(0.55, 0.085, 0.68, 0.53)
+    forwards;
 }
