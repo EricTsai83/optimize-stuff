@@ -60,8 +60,15 @@ function getAnimationClass({ phase, direction }: AnimationState): string {
 // Custom Hooks
 // ============================================================================
 
+type IndicatorStyle = {
+  readonly left: number;
+  readonly width: number;
+  readonly isSquashing: boolean;
+};
+
 /**
  * Manages the tab indicator position based on active tab.
+ * Also tracks squash animation state for velocity feel effect.
  *
  * Limitations:
  * - Requires `useLayoutEffect` to measure DOM before paint, avoiding visual flicker.
@@ -72,8 +79,10 @@ function useIndicatorPosition(
   tabRefs: React.RefObject<Map<DemoKey, HTMLButtonElement | null>>,
   containerRef: React.RefObject<HTMLDivElement | null>,
   activeTab: DemoKey,
-): { left: number; width: number } {
+): IndicatorStyle {
   const [style, setStyle] = useState({ left: 0, width: 0 });
+  const [isSquashing, setIsSquashing] = useState(false);
+  const prevTabRef = useRef<DemoKey>(activeTab);
 
   useLayoutEffect(() => {
     const updateIndicator = (): void => {
@@ -89,12 +98,25 @@ function useIndicatorPosition(
       });
     };
 
+    // Detect tab change and trigger squash animation
+    if (prevTabRef.current !== activeTab) {
+      prevTabRef.current = activeTab;
+      // Reset animation by toggling off then on
+      setIsSquashing(false);
+      // Use requestAnimationFrame to ensure the class is removed before re-adding
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsSquashing(true);
+        });
+      });
+    }
+
     updateIndicator();
     window.addEventListener("resize", updateIndicator);
     return () => window.removeEventListener("resize", updateIndicator);
   }, [tabRefs, containerRef, activeTab]);
 
-  return style;
+  return { ...style, isSquashing };
 }
 
 /**
@@ -184,10 +206,17 @@ export function ImageOptimizationDemo() {
             ref={tabsListRef}
             className="bg-muted text-muted-foreground relative h-11 rounded-full p-1"
           >
-            {/* Sliding indicator */}
+            {/* Sliding indicator with squash-and-stretch effect */}
             <div
-              className="bg-background absolute top-1 h-9 rounded-full shadow-sm transition-all duration-300 ease-out"
-              style={indicatorStyle}
+              className={`bg-background absolute top-1 h-9 rounded-full shadow-sm transition-[left,width] duration-300 ease-out ${
+                indicatorStyle.isSquashing
+                  ? "animate-indicator-squash-stretch"
+                  : ""
+              }`}
+              style={{
+                left: indicatorStyle.left,
+                width: indicatorStyle.width,
+              }}
               aria-hidden="true"
             />
             {DEMO_KEYS.map((tab) => (
