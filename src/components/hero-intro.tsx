@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedLink } from "@/components/ui/animated-link";
+import Link from "next/link";
 
 export function HeroIntro() {
   return (
@@ -41,16 +42,20 @@ export function HeroIntro() {
         <Button
           size="lg"
           className="group h-12 rounded-full px-6 hover:shadow-xl"
+          asChild
         >
-          Start for free
-          <ArrowRight className="ml-0.5 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          <Link href="/">
+            Start for free
+            <ArrowRight className="ml-0.5 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
         </Button>
         <Button
           size="lg"
           variant="outline"
           className="h-12 rounded-full px-6 hover:shadow-xl"
+          asChild
         >
-          Documentation
+          <Link href="/docs">Documentation</Link>
         </Button>
       </div>
     </div>

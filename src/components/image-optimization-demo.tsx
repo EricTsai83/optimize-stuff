@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useRef, useLayoutEffect, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useLayoutEffect,
+  useCallback,
+  useEffect,
+} from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResizeDemo } from "@/components/demos/resize-demo";
 import { FormatDemo } from "@/components/demos/format-demo";
@@ -55,40 +61,48 @@ function getAnimationClass({ phase, direction }: AnimationState): string {
 // ============================================================================
 
 /**
- * Manages the tab indicator position based on active tab
+ * Manages the tab indicator position based on active tab.
+ *
+ * Limitations:
+ * - Requires `useLayoutEffect` to measure DOM before paint, avoiding visual flicker.
+ * - Must listen to window resize to recalculate position when viewport changes.
+ * - The `tabRefs` Map must be populated via ref callbacks on each TabsTrigger.
  */
 function useIndicatorPosition(
-  tabsListRef: React.RefObject<HTMLDivElement | null>,
+  tabRefs: React.RefObject<Map<DemoKey, HTMLButtonElement | null>>,
+  containerRef: React.RefObject<HTMLDivElement | null>,
   activeTab: DemoKey,
 ): { left: number; width: number } {
   const [style, setStyle] = useState({ left: 0, width: 0 });
 
   useLayoutEffect(() => {
     const updateIndicator = (): void => {
-      const list = tabsListRef.current;
-      const tab = list?.querySelector<HTMLButtonElement>(
-        `[data-state="active"]`,
-      );
-      if (!list || !tab) return;
+      const container = containerRef.current;
+      const activeButton = tabRefs.current?.get(activeTab);
+      if (!container || !activeButton) return;
 
-      const listRect = list.getBoundingClientRect();
-      const tabRect = tab.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const buttonRect = activeButton.getBoundingClientRect();
       setStyle({
-        left: tabRect.left - listRect.left,
-        width: tabRect.width,
+        left: buttonRect.left - containerRect.left,
+        width: buttonRect.width,
       });
     };
 
     updateIndicator();
     window.addEventListener("resize", updateIndicator);
     return () => window.removeEventListener("resize", updateIndicator);
-  }, [tabsListRef, activeTab]);
+  }, [tabRefs, containerRef, activeTab]);
 
   return style;
 }
 
 /**
- * Manages tab switching animation state with directional slide transitions
+ * Manages tab switching animation state with directional slide transitions.
+ *
+ * Limitations:
+ * - Uses setTimeout for animation sequencing; timers are cleaned up on unmount
+ *   or when a new tab change interrupts the previous animation.
  */
 function useTabAnimation(initialTab: DemoKey): {
   activeTab: DemoKey;
@@ -101,10 +115,22 @@ function useTabAnimation(initialTab: DemoKey): {
     phase: "idle",
     direction: "left",
   });
+  const timerRefs = useRef<NodeJS.Timeout[]>([]);
+
+  const clearTimers = useCallback((): void => {
+    timerRefs.current.forEach(clearTimeout);
+    timerRefs.current = [];
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimers();
+  }, [clearTimers]);
 
   const handleTabChange = useCallback(
     (value: string): void => {
       if (value === activeTab) return;
+
+      clearTimers();
 
       const newTab = value as DemoKey;
       const direction: SlideDirection =
@@ -115,14 +141,16 @@ function useTabAnimation(initialTab: DemoKey): {
       setActiveTab(newTab);
       setAnimation({ displayedTab: activeTab, phase: "exiting", direction });
 
-      setTimeout(() => {
+      const exitTimer = setTimeout(() => {
         setAnimation({ displayedTab: newTab, phase: "entering", direction });
-        setTimeout(() => {
+        const enterTimer = setTimeout(() => {
           setAnimation((prev) => ({ ...prev, phase: "idle" }));
         }, ANIMATION_DURATION.enter);
+        timerRefs.current.push(enterTimer);
       }, ANIMATION_DURATION.exit);
+      timerRefs.current.push(exitTimer);
     },
-    [activeTab],
+    [activeTab, clearTimers],
   );
 
   return { activeTab, animation, handleTabChange };
@@ -134,9 +162,10 @@ function useTabAnimation(initialTab: DemoKey): {
 
 export function ImageOptimizationDemo() {
   const tabsListRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Map<DemoKey, HTMLButtonElement | null>>(new Map());
   const { activeTab, animation, handleTabChange } =
     useTabAnimation(DEFAULT_TAB);
-  const indicatorStyle = useIndicatorPosition(tabsListRef, activeTab);
+  const indicatorStyle = useIndicatorPosition(tabRefs, tabsListRef, activeTab);
 
   const ActiveDemo = DEMOS[animation.displayedTab];
 
@@ -165,6 +194,9 @@ export function ImageOptimizationDemo() {
               <TabsTrigger
                 key={tab}
                 value={tab}
+                ref={(el) => {
+                  tabRefs.current.set(tab, el);
+                }}
                 className="relative z-10 cursor-pointer rounded-full bg-transparent px-5 py-2 text-sm font-medium capitalize shadow-none transition-colors duration-300 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
               >
                 {tab}

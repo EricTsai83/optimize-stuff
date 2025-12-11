@@ -280,7 +280,7 @@
 }
 
 /* Horizontal slide animations for tab content transitions */
-/* Using smaller translate values (24px) for smoother, less jarring animations */
+/* Using percentage-based translate values (30%) for smooth, responsive animations */
 @keyframes tab-slide-in-from-right {
   from {
     opacity: 0;
