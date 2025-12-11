@@ -8,7 +8,7 @@ import { QualityDemo } from "@/components/demos/quality-demo";
 import { EffectsDemo } from "@/components/demos/effects-demo";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { AnimatedLink } from "@/components/ui/animated-link";
 
 const demos = {
   resize: ResizeDemo,
@@ -66,30 +66,13 @@ export function HeroDemo() {
               <span className="bg-accent relative inline-flex h-2 w-2 rounded-full"></span>
             </span>
             Powered by
-            <Link
+            <AnimatedLink
               href="https://github.com/unjs/ipx"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group/link relative inline-flex items-center gap-1 font-semibold"
+              external
+              showExternalIcon
             >
-              <span className="relative">
-                🖼️ IPX
-                <span className="absolute -bottom-0.5 left-0 h-0.5 w-0 bg-current transition-all duration-300 ease-out group-hover/link:w-full" />
-              </span>
-              <svg
-                className="h-3.5 w-3.5 -translate-x-1 opacity-0 transition-all duration-200 group-hover/link:translate-x-0 group-hover/link:opacity-100"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </Link>
+              🖼️ IPX
+            </AnimatedLink>
           </div>
           <h1
             className="animate-fade-in-up animation-delay-100 animate-on-scroll mb-6 text-4xl leading-[1.1] font-bold tracking-tight text-balance md:text-6xl lg:text-7xl"
