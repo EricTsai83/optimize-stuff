@@ -9,13 +9,13 @@ export function Logo() {
 
 const LogoIcon = () => {
   return (
-    <div className="bg-foreground flex h-8 w-8 items-center justify-center rounded-lg">
+    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[conic-gradient(from_225deg,#84cc16,#22c55e,#10b981,#0d9488,#10b981,#22c55e,#84cc16)]">
       <svg
         width="20"
         height="20"
         viewBox="0 0 24 24"
         fill="none"
-        className="text-background"
+        className="text-white"
         aria-hidden="true"
       >
         {/* 外框 - 圖片邊框 */}
