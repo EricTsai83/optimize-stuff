@@ -837,3 +837,92 @@
 .group:hover .icon-image {
   animation: icon-image-animate 0.5s ease-in-out;
 }
+
+/* ==========================================================================
+   12. Text Decode Animation Effects
+   Cyber-style text decoding animations
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   12.1 Scan Line Animation
+   Horizontal scanning line effect for text decode
+   -------------------------------------------------------------------------- */
+@keyframes scan-line {
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 0.15s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
+   12.2 Character Decode Glow
+   Subtle glow effect for decoded characters
+   -------------------------------------------------------------------------- */
+@keyframes decode-glow {
+  0% {
+    text-shadow: 0 0 0 transparent;
+  }
+  50% {
+    text-shadow:
+      0 0 8px oklch(0.7 0.18 160 / 0.8),
+      0 0 16px oklch(0.7 0.18 160 / 0.4);
+  }
+  100% {
+    text-shadow: 0 0 6px oklch(0.7 0.18 160 / 0.5);
+  }
+}
+
+.animate-decode-glow {
+  animation: decode-glow 0.3s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
+   12.3 Matrix Rain Effect (Optional)
+   Falling characters effect for background decoration
+   -------------------------------------------------------------------------- */
+@keyframes matrix-fall {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.animate-matrix-fall {
+  animation: matrix-fall 2s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   12.4 Text Flicker Effect
+   Subtle flicker for cyberpunk feel
+   -------------------------------------------------------------------------- */
+@keyframes text-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  33% {
+    opacity: 0.95;
+  }
+  66% {
+    opacity: 0.98;
+  }
+}
+
+.animate-text-flicker {
+  animation: text-flicker 0.1s ease-in-out infinite;
+}
