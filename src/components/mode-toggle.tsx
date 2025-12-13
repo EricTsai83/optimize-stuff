@@ -26,7 +26,10 @@ export function ModeToggleButton() {
         type="button"
         aria-label="toggle theme"
         className="border-border bg-secondary relative flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full border"
-      />
+      >
+        {/* Skeleton placeholder with pulse animation */}
+        <span className="bg-muted-foreground/20 h-4 w-4 animate-pulse rounded-full" />
+      </button>
     );
   }
 
