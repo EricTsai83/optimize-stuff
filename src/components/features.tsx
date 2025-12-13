@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import {
   Zap,
   Shield,
@@ -15,6 +16,7 @@ type Feature = {
   readonly icon: LucideIcon;
   readonly title: string;
   readonly description: string;
+  readonly animation?: string;
 };
 
 const features: readonly Feature[] = [
@@ -23,32 +25,38 @@ const features: readonly Feature[] = [
     title: "Lightning Fast",
     description:
       "Built on sharp and libvips for sub-millisecond image processing.",
+    animation: "icon-zap",
   },
   {
     icon: Shield,
     title: "Secure by Default",
     description:
       "Domain whitelisting and signed URLs prevent unauthorized access.",
+    animation: "icon-shield",
   },
   {
     icon: Globe,
     title: "Edge Optimized",
     description: "Deploy globally with automatic caching at the edge.",
+    animation: "icon-globe",
   },
   {
     icon: Code,
     title: "Simple API",
     description: "URL-based modifiers for resize, crop, format, and more.",
+    animation: "icon-code",
   },
   {
     icon: Layers,
     title: "Format Support",
     description: "WebP, AVIF, JPEG, PNG, GIF, and SVG optimization.",
+    animation: "icon-layers",
   },
   {
     icon: ImageIcon,
     title: "Auto Optimization",
     description: "Intelligent format selection based on browser support.",
+    animation: "icon-image",
   },
 ];
 
@@ -107,8 +115,18 @@ export function Features() {
               }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div className="bg-muted group-hover:bg-accent/10 mb-4 flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <feature.icon className="text-muted-foreground group-hover:text-accent h-5 w-5 transition-colors duration-300" />
+              <div
+                className={cn(
+                  "bg-muted group-hover:bg-accent/10 mb-4 flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-500",
+                  `icon-container-${feature.animation}`,
+                )}
+              >
+                <feature.icon
+                  className={cn(
+                    "text-muted-foreground group-hover:text-accent h-5 w-5 transition-colors duration-300",
+                    feature.animation,
+                  )}
+                />
               </div>
               <h3 className="mb-2 font-semibold">{feature.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">

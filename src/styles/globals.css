@@ -3,6 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Enable CSS variable animation for spinning border effect */
+@property --border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
 :root {
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.13 0.02 260);
@@ -367,4 +374,171 @@
 .animate-indicator-squash-stretch {
   animation: indicator-squash-stretch 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)
     forwards;
+}
+
+/* Added unique icon animations for feature cards */
+@keyframes icon-zap-animate {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-8deg);
+  }
+  50% {
+    transform: scale(1.15) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(8deg);
+  }
+}
+
+@keyframes icon-shield-animate {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.1) translateY(-3px);
+  }
+}
+
+@keyframes icon-globe-animate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.08);
+  }
+}
+
+@keyframes icon-code-animate {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.05) translateX(-2px);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.05) translateX(2px);
+  }
+}
+
+@keyframes icon-layers-animate {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  33% {
+    transform: translateY(-2px) scale(1.05);
+  }
+  66% {
+    transform: translateY(2px) scale(1.05);
+  }
+  100% {
+    transform: translateY(0) scale(1.1);
+  }
+}
+
+@keyframes icon-image-animate {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.12);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes icon-container-border-fill {
+  0% {
+    --border-angle: 0deg;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  80% {
+    --border-angle: 360deg;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  100% {
+    --border-angle: 360deg;
+    filter: drop-shadow(0 0 6px oklch(0.7 0.18 160 / 0.8));
+  }
+}
+
+/* Icon container with spinning border effect */
+.icon-container-icon-zap,
+.icon-container-icon-shield,
+.icon-container-icon-globe,
+.icon-container-icon-code,
+.icon-container-icon-layers,
+.icon-container-icon-image {
+  position: relative;
+  --border-angle: 0deg;
+}
+
+.icon-container-icon-zap::before,
+.icon-container-icon-shield::before,
+.icon-container-icon-globe::before,
+.icon-container-icon-code::before,
+.icon-container-icon-layers::before,
+.icon-container-icon-image::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px; /* slightly larger than rounded-xl (12px) */
+  background: conic-gradient(
+    from -90deg,
+    oklch(0.7 0.18 160) 0deg,
+    oklch(0.7 0.18 160) var(--border-angle),
+    transparent var(--border-angle),
+    transparent 360deg
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 1px;
+}
+
+.group:hover .icon-container-icon-zap::before,
+.group:hover .icon-container-icon-shield::before,
+.group:hover .icon-container-icon-globe::before,
+.group:hover .icon-container-icon-code::before,
+.group:hover .icon-container-icon-layers::before,
+.group:hover .icon-container-icon-image::before {
+  opacity: 1;
+  animation: icon-container-border-fill 0.6s ease-out forwards;
+}
+
+/* Added hover animations for each feature icon type */
+.group:hover .icon-zap {
+  animation: icon-zap-animate 0.5s ease-in-out;
+}
+
+.group:hover .icon-shield {
+  animation: icon-shield-animate 0.6s ease-in-out;
+}
+
+.group:hover .icon-globe {
+  animation: icon-globe-animate 0.8s ease-in-out;
+}
+
+.group:hover .icon-code {
+  animation: icon-code-animate 0.5s ease-in-out;
+}
+
+.group:hover .icon-layers {
+  animation: icon-layers-animate 0.6s ease-in-out;
+}
+
+.group:hover .icon-image {
+  animation: icon-image-animate 0.5s ease-in-out;
 }
