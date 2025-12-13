@@ -384,6 +384,46 @@
 }
 
 /* ==========================================================================
+   9.1 Feature Card Entrance Animation
+   Staggered fade-in-up animation for feature cards
+   ========================================================================== */
+@keyframes feature-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-feature-card-enter {
+  animation: feature-card-enter 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* ==========================================================================
+   9.2 Feature Card Hover Effect
+   Smooth lift effect with shadow on hover
+   ========================================================================== */
+.feature-card-hover {
+  transform: translateY(0);
+  transition:
+    transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 600ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+
+.feature-card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 10px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* ==========================================================================
    10. Tab Content Transition Animations
    Uses percentage-based translate values (30%) for smooth, responsive animations
    ========================================================================== */

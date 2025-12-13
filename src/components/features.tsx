@@ -62,7 +62,12 @@ const features: readonly Feature[] = [
 
 export function Features() {
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
+  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const handleAnimationEnd = (index: number): void => {
+    setAnimatedCards((prev) => [...new Set([...prev, index])]);
+  };
 
   useEffect(() => {
     const observers = cardRefs.current.map((ref, index) => {
@@ -108,12 +113,21 @@ export function Features() {
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
-              className={`group hover:border-border hover:bg-muted/30 rounded-2xl border border-transparent p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                visibleCards.includes(index)
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-4 opacity-0"
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
+              className={cn(
+                "group rounded-2xl border border-transparent p-6",
+                "hover:border-border hover:bg-muted/30",
+                animatedCards.includes(index)
+                  ? "feature-card-hover opacity-100"
+                  : visibleCards.includes(index)
+                    ? "animate-feature-card-enter"
+                    : "opacity-0",
+              )}
+              onAnimationEnd={() => handleAnimationEnd(index)}
+              style={{
+                animationDelay: visibleCards.includes(index)
+                  ? `${index * 100}ms`
+                  : undefined,
+              }}
             >
               <div
                 className={cn(
