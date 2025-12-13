@@ -1,82 +1,72 @@
 "use client";
 
-import {
-  Zap,
-  Shield,
-  Globe,
-  Code,
-  Layers,
-  ImageIcon,
-  type LucideIcon,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import { Code, Globe, ImageIcon, Layers, Shield, Zap } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 type Feature = {
   readonly icon: LucideIcon;
   readonly title: string;
   readonly description: string;
+  readonly animation: string;
 };
 
-const features: readonly Feature[] = [
+type FeatureCardProps = {
+  readonly feature: Feature;
+  readonly index: number;
+  readonly isVisible: boolean;
+  readonly isAnimated: boolean;
+  readonly onAnimationEnd: (
+    e: React.AnimationEvent<HTMLDivElement>,
+    index: number,
+  ) => void;
+};
+
+const FEATURES: readonly Feature[] = [
   {
     icon: Zap,
     title: "Lightning Fast",
     description:
       "Built on sharp and libvips for sub-millisecond image processing.",
+    animation: "icon-zap",
   },
   {
     icon: Shield,
     title: "Secure by Default",
     description:
       "Domain whitelisting and signed URLs prevent unauthorized access.",
+    animation: "icon-shield",
   },
   {
     icon: Globe,
     title: "Edge Optimized",
     description: "Deploy globally with automatic caching at the edge.",
+    animation: "icon-globe",
   },
   {
     icon: Code,
     title: "Simple API",
     description: "URL-based modifiers for resize, crop, format, and more.",
+    animation: "icon-code",
   },
   {
     icon: Layers,
     title: "Format Support",
     description: "WebP, AVIF, JPEG, PNG, GIF, and SVG optimization.",
+    animation: "icon-layers",
   },
   {
     icon: ImageIcon,
     title: "Auto Optimization",
     description: "Intelligent format selection based on browser support.",
+    animation: "icon-image",
   },
 ];
 
 export function Features() {
-  const [visibleCards, setVisibleCards] = useState<number[]>([]);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const observers = cardRefs.current.map((ref, index) => {
-      if (!ref) return null;
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry?.isIntersecting) {
-            setVisibleCards((prev) => [...new Set([...prev, index])]);
-          }
-        },
-        { threshold: 0.2 },
-      );
-
-      observer.observe(ref);
-      return observer;
-    });
-
-    return () => {
-      observers.forEach((observer) => observer?.disconnect());
-    };
-  }, []);
+  const { cardRefs, visibleCards, animatedCards, handleAnimationEnd } =
+    useCardVisibility(FEATURES.length);
 
   return (
     <section id="features" className="bg-background py-24">
@@ -94,30 +84,134 @@ export function Features() {
         </div>
 
         <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, index) => (
+          {FEATURES.map((feature, index) => (
             <div
               key={feature.title}
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
-              className={`group hover:border-border hover:bg-muted/30 rounded-2xl border border-transparent p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                visibleCards.includes(index)
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-4 opacity-0"
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div className="bg-muted group-hover:bg-accent/10 mb-4 flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <feature.icon className="text-muted-foreground group-hover:text-accent h-5 w-5 transition-colors duration-300" />
-              </div>
-              <h3 className="mb-2 font-semibold">{feature.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {feature.description}
-              </p>
+              <FeatureCard
+                feature={feature}
+                index={index}
+                isVisible={visibleCards.has(index)}
+                isAnimated={animatedCards.has(index)}
+                onAnimationEnd={handleAnimationEnd}
+              />
             </div>
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+const INTERSECTION_THRESHOLD = 0.2;
+
+function useCardVisibility(cardCount: number): {
+  readonly cardRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
+  readonly visibleCards: ReadonlySet<number>;
+  readonly animatedCards: ReadonlySet<number>;
+  readonly handleAnimationEnd: (
+    e: React.AnimationEvent<HTMLDivElement>,
+    index: number,
+  ) => void;
+} {
+  const [visibleCards, setVisibleCards] = useState<ReadonlySet<number>>(
+    () => new Set(),
+  );
+  const [animatedCards, setAnimatedCards] = useState<ReadonlySet<number>>(
+    () => new Set(),
+  );
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const handleAnimationEnd = useCallback(
+    (e: React.AnimationEvent<HTMLDivElement>, index: number): void => {
+      // 只處理卡片入場動畫，忽略圖標 hover 動畫的冒泡事件
+      if (e.animationName === "feature-card-enter") {
+        setAnimatedCards((prev) => new Set(prev).add(index));
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const currentRefs = cardRefs.current;
+    const observers: IntersectionObserver[] = [];
+
+    currentRefs.forEach((ref, index) => {
+      if (!ref) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            setVisibleCards((prev) => new Set(prev).add(index));
+            observer.disconnect();
+          }
+        },
+        { threshold: INTERSECTION_THRESHOLD },
+      );
+
+      observer.observe(ref);
+      observers.push(observer);
+    });
+
+    return () => {
+      observers.forEach((observer) => observer.disconnect());
+    };
+  }, [cardCount]);
+
+  return { cardRefs, visibleCards, animatedCards, handleAnimationEnd };
+}
+
+const ANIMATION_DELAY_MS = 100;
+
+function FeatureCard({
+  feature,
+  index,
+  isVisible,
+  isAnimated,
+  onAnimationEnd,
+}: FeatureCardProps) {
+  const Icon = feature.icon;
+
+  const cardClassName = cn(
+    "group rounded-2xl border border-transparent p-6",
+    "hover:border-border hover:bg-muted/30",
+    isAnimated
+      ? "feature-card-hover opacity-100"
+      : isVisible
+        ? "animate-feature-card-enter"
+        : "opacity-0",
+  );
+
+  const animationDelay = isVisible
+    ? `${index * ANIMATION_DELAY_MS}ms`
+    : undefined;
+
+  return (
+    <div
+      className={cardClassName}
+      onAnimationEnd={(e) => onAnimationEnd(e, index)}
+      style={{ animationDelay }}
+    >
+      <div
+        className={cn(
+          "bg-muted group-hover:bg-accent/10 mb-4 flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-500",
+          `icon-container-${feature.animation}`,
+        )}
+      >
+        <Icon
+          className={cn(
+            "text-muted-foreground group-hover:text-accent h-5 w-5 transition-colors duration-300",
+            feature.animation,
+          )}
+        />
+      </div>
+      <h3 className="mb-2 font-semibold">{feature.title}</h3>
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        {feature.description}
+      </p>
+    </div>
   );
 }

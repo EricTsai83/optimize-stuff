@@ -1,34 +1,74 @@
+/* ==========================================================================
+   Global Styles
+   ========================================================================== */
+
+/* ==========================================================================
+   1. Imports
+   ========================================================================== */
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ==========================================================================
+   2. Custom Variant for Dark Mode
+   ========================================================================== */
 @custom-variant dark (&:is(.dark *));
 
+/* ==========================================================================
+   3. CSS Custom Properties (Design Tokens)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   3.1 Light Mode Theme
+   -------------------------------------------------------------------------- */
 :root {
+  /* Core colors */
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.13 0.02 260);
+
+  /* Card colors */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.13 0.02 260);
+
+  /* Popover colors */
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.13 0.02 260);
+
+  /* Primary colors */
   --primary: oklch(0.13 0.02 260);
   --primary-foreground: oklch(0.99 0 0);
+
+  /* Secondary colors */
   --secondary: oklch(0.97 0.005 260);
   --secondary-foreground: oklch(0.13 0.02 260);
+
+  /* Muted colors */
   --muted: oklch(0.96 0.005 260);
   --muted-foreground: oklch(0.5 0.02 260);
+
+  /* Accent colors */
   --accent: oklch(0.7 0.18 160);
   --accent-foreground: oklch(0.99 0 0);
+
+  /* Destructive colors */
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  /* Border & input colors */
   --border: oklch(0.93 0.005 260);
   --input: oklch(0.93 0.005 260);
   --ring: oklch(0.7 0.18 160);
+
+  /* Chart colors */
   --chart-1: oklch(0.7 0.18 160);
   --chart-2: oklch(0.6 0.15 200);
   --chart-3: oklch(0.65 0.12 280);
   --chart-4: oklch(0.75 0.15 80);
   --chart-5: oklch(0.6 0.2 30);
+
+  /* Border radius */
   --radius: 0.75rem;
+
+  /* Sidebar colors */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -39,31 +79,55 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* --------------------------------------------------------------------------
+   3.2 Dark Mode Theme
+   -------------------------------------------------------------------------- */
 .dark {
+  /* Core colors */
   --background: oklch(0.1 0.01 260);
   --foreground: oklch(0.97 0 0);
+
+  /* Card colors */
   --card: oklch(0.14 0.01 260);
   --card-foreground: oklch(0.97 0 0);
+
+  /* Popover colors */
   --popover: oklch(0.14 0.01 260);
   --popover-foreground: oklch(0.97 0 0);
+
+  /* Primary colors */
   --primary: oklch(0.97 0 0);
   --primary-foreground: oklch(0.1 0.01 260);
+
+  /* Secondary colors */
   --secondary: oklch(0.2 0.01 260);
   --secondary-foreground: oklch(0.97 0 0);
+
+  /* Muted colors */
   --muted: oklch(0.2 0.01 260);
   --muted-foreground: oklch(0.6 0.01 260);
+
+  /* Accent colors */
   --accent: oklch(0.7 0.18 160);
   --accent-foreground: oklch(0.97 0 0);
+
+  /* Destructive colors */
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
+
+  /* Border & input colors */
   --border: oklch(0.25 0.01 260);
   --input: oklch(0.25 0.01 260);
   --ring: oklch(0.7 0.18 160);
+
+  /* Chart colors */
   --chart-1: oklch(0.7 0.18 160);
   --chart-2: oklch(0.6 0.15 200);
   --chart-3: oklch(0.65 0.12 280);
   --chart-4: oklch(0.75 0.15 80);
   --chart-5: oklch(0.6 0.2 30);
+
+  /* Sidebar colors */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -74,9 +138,15 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* ==========================================================================
+   4. Tailwind Theme Configuration
+   ========================================================================== */
 @theme inline {
+  /* Typography */
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+
+  /* Color mappings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -101,10 +171,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Border radius scale */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Sidebar color mappings */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -113,7 +187,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  /* Add custom animation timing functions and durations */
+
+  /* Custom animation definitions */
   --animate-fade-in: fade-in 0.6s ease-out forwards;
   --animate-fade-in-up: fade-in-up 0.6s ease-out forwards;
   --animate-fade-in-down: fade-in-down 0.5s ease-out forwards;
@@ -124,16 +199,24 @@
   --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
 }
 
+/* ==========================================================================
+   5. Base Layer Styles
+   ========================================================================== */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
-/* Add custom keyframes for animations */
+/* ==========================================================================
+   6. Basic Animations (Fade, Scale, Slide)
+   ========================================================================== */
+
+/* --- Fade In --- */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -143,6 +226,11 @@
   }
 }
 
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+/* --- Fade In Up --- */
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -154,6 +242,11 @@
   }
 }
 
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+/* --- Fade In Down --- */
 @keyframes fade-in-down {
   from {
     opacity: 0;
@@ -165,6 +258,11 @@
   }
 }
 
+.animate-fade-in-down {
+  animation: fade-in-down 0.5s ease-out forwards;
+}
+
+/* --- Scale In --- */
 @keyframes scale-in {
   from {
     opacity: 0;
@@ -176,6 +274,11 @@
   }
 }
 
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out forwards;
+}
+
+/* --- Slide In Left --- */
 @keyframes slide-in-left {
   from {
     opacity: 0;
@@ -187,6 +290,11 @@
   }
 }
 
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s ease-out forwards;
+}
+
+/* --- Slide In Right --- */
 @keyframes slide-in-right {
   from {
     opacity: 0;
@@ -198,6 +306,15 @@
   }
 }
 
+.animate-slide-in-right {
+  animation: slide-in-right 0.5s ease-out forwards;
+}
+
+/* ==========================================================================
+   7. Continuous Animations (Infinite Loop)
+   ========================================================================== */
+
+/* --- Float --- */
 @keyframes float {
   0%,
   100% {
@@ -208,6 +325,11 @@
   }
 }
 
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* --- Pulse Soft --- */
 @keyframes pulse-soft {
   0%,
   100% {
@@ -218,69 +340,95 @@
   }
 }
 
-/* Add animation utility classes */
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out forwards;
-}
-
-.animate-fade-in-down {
-  animation: fade-in-down 0.5s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.4s ease-out forwards;
-}
-
-.animate-slide-in-left {
-  animation: slide-in-left 0.5s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.5s ease-out forwards;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
-/* Animation delay utilities */
+/* ==========================================================================
+   8. Animation Delay Utilities
+   ========================================================================== */
 .animation-delay-100 {
   animation-delay: 100ms;
 }
+
 .animation-delay-200 {
   animation-delay: 200ms;
 }
+
 .animation-delay-300 {
   animation-delay: 300ms;
 }
+
 .animation-delay-400 {
   animation-delay: 400ms;
 }
+
 .animation-delay-500 {
   animation-delay: 500ms;
 }
+
 .animation-delay-600 {
   animation-delay: 600ms;
 }
+
 .animation-delay-700 {
   animation-delay: 700ms;
 }
 
-/* Start opacity at 0 for animated elements */
+/* ==========================================================================
+   9. Scroll Animation Helper
+   Elements start invisible and animate when scrolled into view
+   ========================================================================== */
 .animate-on-scroll {
   opacity: 0;
 }
 
-/* Horizontal slide animations for tab content transitions */
-/* Using percentage-based translate values (30%) for smooth, responsive animations */
+/* ==========================================================================
+   9.1 Feature Card Entrance Animation
+   Staggered fade-in-up animation for feature cards
+   ========================================================================== */
+@keyframes feature-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-feature-card-enter {
+  animation: feature-card-enter 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* ==========================================================================
+   9.2 Feature Card Hover Effect
+   Smooth lift effect with shadow on hover
+   ========================================================================== */
+.feature-card-hover {
+  transform: translateY(0);
+  transition:
+    transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 600ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+
+.feature-card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 10px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* ==========================================================================
+   10. Tab Content Transition Animations
+   Uses percentage-based translate values (30%) for smooth, responsive animations
+   ========================================================================== */
+
+/* --- Tab Slide In From Right --- */
 @keyframes tab-slide-in-from-right {
   from {
     opacity: 0;
@@ -292,6 +440,12 @@
   }
 }
 
+.animate-tab-slide-in-from-right {
+  animation: tab-slide-in-from-right 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+    forwards;
+}
+
+/* --- Tab Slide In From Left --- */
 @keyframes tab-slide-in-from-left {
   from {
     opacity: 0;
@@ -303,6 +457,12 @@
   }
 }
 
+.animate-tab-slide-in-from-left {
+  animation: tab-slide-in-from-left 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+    forwards;
+}
+
+/* --- Tab Slide Out To Left --- */
 @keyframes tab-slide-out-to-left {
   from {
     opacity: 1;
@@ -314,6 +474,12 @@
   }
 }
 
+.animate-tab-slide-out-to-left {
+  animation: tab-slide-out-to-left 0.15s cubic-bezier(0.55, 0.085, 0.68, 0.53)
+    forwards;
+}
+
+/* --- Tab Slide Out To Right --- */
 @keyframes tab-slide-out-to-right {
   from {
     opacity: 1;
@@ -325,27 +491,12 @@
   }
 }
 
-.animate-tab-slide-in-from-right {
-  animation: tab-slide-in-from-right 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)
-    forwards;
-}
-
-.animate-tab-slide-in-from-left {
-  animation: tab-slide-in-from-left 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)
-    forwards;
-}
-
-.animate-tab-slide-out-to-left {
-  animation: tab-slide-out-to-left 0.15s cubic-bezier(0.55, 0.085, 0.68, 0.53)
-    forwards;
-}
-
 .animate-tab-slide-out-to-right {
   animation: tab-slide-out-to-right 0.15s cubic-bezier(0.55, 0.085, 0.68, 0.53)
     forwards;
 }
 
-/* Tab indicator squash-and-stretch animation for velocity feel */
+/* --- Tab Indicator Squash-and-Stretch (for velocity feel) --- */
 @keyframes indicator-squash-stretch {
   0% {
     transform: scaleX(1) scaleY(1);
@@ -367,4 +518,322 @@
 .animate-indicator-squash-stretch {
   animation: indicator-squash-stretch 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)
     forwards;
+}
+
+/* ==========================================================================
+   11. Feature Card Icon Animations
+   Unique animations for each icon type to add visual interest on hover
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   11.1 Icon Container Base Styles
+   Sets up positioning and isolation for pseudo-element effects
+   -------------------------------------------------------------------------- */
+.icon-container-icon-zap,
+.icon-container-icon-shield,
+.icon-container-icon-globe,
+.icon-container-icon-code,
+.icon-container-icon-layers,
+.icon-container-icon-image {
+  position: relative;
+  isolation: isolate;
+}
+
+/* --------------------------------------------------------------------------
+   11.2 Icon Container Border Effect
+   Creates an expanding border effect on hover using pseudo-element
+   -------------------------------------------------------------------------- */
+@keyframes icon-container-border-expand {
+  0% {
+    opacity: 0;
+    clip-path: circle(0% at center);
+  }
+  40% {
+    opacity: 0.04;
+    clip-path: circle(40% at center);
+  }
+  60% {
+    opacity: 0.06;
+    clip-path: circle(60% at center);
+  }
+  80% {
+    opacity: 0.1;
+    clip-path: circle(80% at center);
+  }
+  100% {
+    opacity: 0.1;
+    clip-path: circle(75% at center);
+  }
+}
+
+.icon-container-icon-zap::before,
+.icon-container-icon-shield::before,
+.icon-container-icon-globe::before,
+.icon-container-icon-code::before,
+.icon-container-icon-layers::before,
+.icon-container-icon-image::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px;
+  border: 1px solid oklch(0.7 0.18 160);
+  clip-path: circle(0% at center);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.group:hover .icon-container-icon-zap::before,
+.group:hover .icon-container-icon-shield::before,
+.group:hover .icon-container-icon-globe::before,
+.group:hover .icon-container-icon-code::before,
+.group:hover .icon-container-icon-layers::before,
+.group:hover .icon-container-icon-image::before {
+  animation: icon-container-border-expand 0.5s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
+   11.3 Icon Container Glow Effect - Light Mode
+   Soft elevation shadow with backlight effect
+   -------------------------------------------------------------------------- */
+@keyframes icon-container-glow-light {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  100% {
+    box-shadow:
+      /* Backlight glow (even spread from all sides) */
+      0 0 16px 2px oklch(0.7 0.18 160 / 0.3),
+      0 0 32px 4px oklch(0.7 0.18 160 / 0.15),
+      /* Border highlight */ 0 0 0 2px oklch(0.7 0.18 160 / 0.15);
+  }
+}
+
+.group:hover .icon-container-icon-zap,
+.group:hover .icon-container-icon-shield,
+.group:hover .icon-container-icon-globe,
+.group:hover .icon-container-icon-code,
+.group:hover .icon-container-icon-layers,
+.group:hover .icon-container-icon-image {
+  animation: icon-container-glow-light 0.6s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
+   11.4 Icon Container Glow Effect - Dark Mode
+   Neon glowing effect
+   -------------------------------------------------------------------------- */
+@keyframes icon-container-glow-dark {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  100% {
+    box-shadow:
+      0 0 16px 4px oklch(0.7 0.18 160 / 0.4),
+      0 0 32px 8px oklch(0.7 0.18 160 / 0.2),
+      0 0 48px 12px oklch(0.7 0.18 160 / 0.1);
+  }
+}
+
+.dark .group:hover .icon-container-icon-zap,
+.dark .group:hover .icon-container-icon-shield,
+.dark .group:hover .icon-container-icon-globe,
+.dark .group:hover .icon-container-icon-code,
+.dark .group:hover .icon-container-icon-layers,
+.dark .group:hover .icon-container-icon-image {
+  animation: icon-container-glow-dark 0.6s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
+   11.5 Zap Icon Animation
+   Electric vibration effect - rotate, shake, then rotate back
+   -------------------------------------------------------------------------- */
+@keyframes icon-zap-animate {
+  /* Phase 1: Rotate to 24deg */
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(24deg);
+  }
+  /* Phase 2: Shake while at 24deg */
+  25% {
+    transform: rotate(24deg) translateX(-1.2px);
+  }
+  30% {
+    transform: rotate(24deg) translateX(1.2px);
+  }
+  35% {
+    transform: rotate(24deg) translateX(-1.2px);
+  }
+  40% {
+    transform: rotate(24deg) translateX(1.2px);
+  }
+  45% {
+    transform: rotate(24deg) translateX(-1.2px);
+  }
+  50% {
+    transform: rotate(24deg) translateX(1.2px);
+  }
+  55% {
+    transform: rotate(24deg) translateX(-1.2px);
+  }
+  60% {
+    transform: rotate(24deg) translateX(1.2px);
+  }
+  65% {
+    transform: rotate(24deg) translateX(0);
+  }
+  /* Phase 3: Rotate back to 0deg */
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.group:hover .icon-zap {
+  animation: icon-zap-animate 0.6s ease-in-out;
+}
+
+/* --------------------------------------------------------------------------
+   11.6 Shield Icon Animation
+   Forward block effect - like deflecting an incoming attack
+   -------------------------------------------------------------------------- */
+@keyframes icon-shield-animate {
+  0% {
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.12) translateY(-2px) rotate(-6deg);
+  }
+  50% {
+    transform: scale(1.15) translateY(-3px) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.1) translateY(-2px) rotate(12deg);
+  }
+  100% {
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+.group:hover .icon-shield {
+  animation: icon-shield-animate 0.5s ease-in-out;
+}
+
+/* --------------------------------------------------------------------------
+   11.7 Globe Icon Animation
+   Rotation animation
+   -------------------------------------------------------------------------- */
+@keyframes icon-globe-animate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.08);
+  }
+}
+
+.group:hover .icon-globe {
+  animation: icon-globe-animate 0.8s ease-in-out;
+}
+
+/* --------------------------------------------------------------------------
+   11.8 Code Icon Animation
+   Squash and stretch bounce effect
+   -------------------------------------------------------------------------- */
+@keyframes icon-code-animate {
+  0% {
+    transform: scale(1, 1);
+  }
+  /* Squash - 壓扁 */
+  10% {
+    transform: scale(1.4, 0.6);
+  }
+  /* Stretch - 彈起拉長 */
+  20% {
+    transform: scale(0.8, 1.25);
+  }
+  /* Bounce 1 - 第一次回彈 */
+  30% {
+    transform: scale(1.15, 0.88);
+  }
+  /* Bounce 2 - 第二次回彈 */
+  40% {
+    transform: scale(0.92, 1.1);
+  }
+  /* Bounce 3 - 第三次回彈 */
+  50% {
+    transform: scale(1.08, 0.94);
+  }
+  /* Bounce 4 - 第四次回彈 */
+  60% {
+    transform: scale(0.95, 1.06);
+  }
+  /* Bounce 5 - 第五次回彈 */
+  72% {
+    transform: scale(1.03, 0.97);
+  }
+  /* Settle - 穩定 */
+  85% {
+    transform: scale(0.99, 1.01);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+.group:hover .icon-code {
+  animation: icon-code-animate 0.95s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --------------------------------------------------------------------------
+   11.9 Layers Icon Animation
+   Stacking animation
+   -------------------------------------------------------------------------- */
+@keyframes icon-layers-animate {
+  0% {
+    transform: translateY(0);
+  }
+  33% {
+    transform: translateY(-2px);
+  }
+  66% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.group:hover .icon-layers {
+  animation: icon-layers-animate 0.6s ease-in-out;
+}
+
+/* --------------------------------------------------------------------------
+   11.10 Image Icon Animation
+   Camera flash effect - like auto-focus capturing
+   -------------------------------------------------------------------------- */
+@keyframes icon-image-animate {
+  0% {
+    filter: brightness(1);
+    opacity: 1;
+  }
+  30% {
+    filter: brightness(1.2);
+    opacity: 0.9;
+  }
+  50% {
+    filter: brightness(1.3);
+    opacity: 1;
+  }
+  70% {
+    filter: brightness(1.1);
+    opacity: 0.95;
+  }
+  100% {
+    filter: brightness(1);
+    opacity: 1;
+  }
+}
+
+.group:hover .icon-image {
+  animation: icon-image-animate 0.5s ease-in-out;
 }
