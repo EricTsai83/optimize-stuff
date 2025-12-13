@@ -70,15 +70,11 @@ type TextDecodeProps = {
   /** Whether to auto-start animation on mount */
   readonly autoStart?: boolean;
 
-  /** Whether to loop the animation */
-  readonly loop?: boolean;
-
   /**
-   * Delay before restarting when loop is enabled (in ms).
-   *
-   * @default 2000
+   * When true, stops the animation loop.
+   * Animation loops indefinitely until this becomes true.
    */
-  readonly loopDelay?: number;
+  readonly shouldStop?: boolean;
 };
 
 /**
@@ -133,17 +129,17 @@ export function TextDecode({
   onComplete,
   className,
   autoStart = true,
-  loop = false,
-  loopDelay = 2000,
+  shouldStop = false,
 }: TextDecodeProps) {
   const maxLength = useMemo(() => getMaxLength(from, to), [from, to]);
-  const [isStarted, setIsStarted] = useState(false);
+  /** Increments each time animation starts, used to trigger useEffect */
+  const [animationKey, setAnimationKey] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [chars, setChars] = useState<readonly CharData[]>([]);
+  const [isAnimationDone, setIsAnimationDone] = useState(false);
   const intervalRefs = useRef<Map<number, ReturnType<typeof setInterval>>>(
     new Map(),
   );
-  const isCompleted = useRef(false);
 
   /**
    * Initialize character states - all start in "waiting" state
@@ -175,7 +171,7 @@ export function TextDecode({
 
     setCurrentIndex(-1);
     setChars(initializeChars());
-    isCompleted.current = false;
+    setIsAnimationDone(false);
   }, [initializeChars]);
 
   /**
@@ -183,7 +179,7 @@ export function TextDecode({
    */
   const start = useCallback((): void => {
     reset();
-    setIsStarted(true);
+    setAnimationKey((prev) => prev + 1);
   }, [reset]);
 
   // Initialize chars on mount
@@ -204,7 +200,7 @@ export function TextDecode({
 
   // Main animation logic
   useEffect(() => {
-    if (!isStarted || chars.length === 0) return;
+    if (animationKey === 0 || chars.length === 0) return;
 
     const totalChars = maxLength;
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -255,16 +251,8 @@ export function TextDecode({
 
           // Check if this is the last character
           if (i === totalChars - 1) {
-            isCompleted.current = true;
+            setIsAnimationDone(true);
             onComplete?.();
-
-            // Handle loop
-            if (loop) {
-              setTimeout(() => {
-                reset();
-                start();
-              }, loopDelay);
-            }
           }
         }, scrambleDuration);
 
@@ -282,17 +270,21 @@ export function TextDecode({
       intervalRefs.current.clear();
     };
   }, [
-    isStarted,
+    animationKey,
     maxLength,
     staggerDelay,
     scrambleDuration,
     onComplete,
-    loop,
-    loopDelay,
-    reset,
-    start,
     chars.length,
   ]);
+
+  // Auto-restart loop when animation completes and shouldStop is false
+  useEffect(() => {
+    if (!isAnimationDone || shouldStop) return;
+
+    // Immediately restart animation
+    start();
+  }, [isAnimationDone, shouldStop, start]);
 
   return (
     <span
@@ -339,7 +331,7 @@ export function TextDecode({
       ))}
 
       {/* Blinking cursor effect */}
-      {showCursor && !isCompleted.current && isStarted && (
+      {showCursor && !isAnimationDone && animationKey > 0 && (
         <span
           className={cn(
             "bg-accent ml-0.5 inline-block h-[1.1em] w-[2px] animate-pulse",

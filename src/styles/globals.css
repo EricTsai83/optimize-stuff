@@ -926,3 +926,35 @@
 .animate-text-flicker {
   animation: text-flicker 0.1s ease-in-out infinite;
 }
+
+/* --------------------------------------------------------------------------
+   12.5 Text Sweep Glow Effect
+   Quick flash up, smooth fade back
+   -------------------------------------------------------------------------- */
+@keyframes text-sweep-glow {
+  0% {
+    text-shadow:
+      0 0 8px oklch(0.7 0.18 160 / 0.4),
+      0 0 0 oklch(0.7 0.18 160 / 0),
+      0 0 0 oklch(1 0 0 / 0);
+    filter: brightness(1);
+  }
+  8% {
+    text-shadow:
+      0 0 14px oklch(0.85 0.2 160 / 0.8),
+      0 0 28px oklch(0.8 0.18 160 / 0.5),
+      0 0 6px oklch(1 0 0 / 0.4);
+    filter: brightness(1.4);
+  }
+  100% {
+    text-shadow:
+      0 0 8px oklch(0.7 0.18 160 / 0.4),
+      0 0 0 oklch(0.7 0.18 160 / 0),
+      0 0 0 oklch(1 0 0 / 0);
+    filter: brightness(1);
+  }
+}
+
+.dark .animate-text-sweep-glow {
+  animation: text-sweep-glow 1.5s cubic-bezier(0, 0, 0.2, 1) forwards;
+}

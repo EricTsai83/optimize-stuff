@@ -2,7 +2,7 @@
 
 import { RotateCcw } from "lucide-react";
 
-import { FormatConversionLabel } from "@/components/hero-animation-parts/format-conversion-label";
+import { OptimizationStatusLabel } from "@/components/hero-animation-parts/optimization-status-label";
 import {
   OPTIMIZED_SIZE_RATIO,
   ORIGINAL_SIZE_KB,
@@ -99,11 +99,14 @@ export function HeroAnimation() {
 
         {/* Bottom info section */}
         <div className="absolute right-0 bottom-0 left-0 h-[72px] px-4 pb-2">
-          {/* Format conversion label (left) */}
-          <FormatConversionLabel shouldStartDecode={shouldStartDecode} />
+          {/* Optimization status label (left) */}
+          <OptimizationStatusLabel
+            shouldStartDecode={shouldStartDecode}
+            isOptimized={isOptimized}
+          />
 
           {/* File size display (right) */}
-          <div className="text-accent/50 absolute right-4 bottom-[30px] font-mono text-sm">
+          <div className="text-accent/50 absolute right-4 bottom-[30px] font-mono text-sm font-semibold">
             {currentSize}KB
           </div>
 
@@ -200,7 +203,7 @@ export function HeroAnimation() {
         {/* Size savings badge (shown after optimization) */}
         {isOptimized && (
           <div
-            className="bg-accent/15 text-accent/90 animate-fade-in absolute top-6 right-6 rounded-full px-3 py-1 font-mono text-xs"
+            className="bg-accent/15 text-accent/90 animate-fade-in absolute top-6 right-6 rounded-full px-3 py-1 font-mono text-xs font-semibold"
             style={{ animationDuration: "0.3s" }}
           >
             size: -65%
