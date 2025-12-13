@@ -20,7 +20,7 @@ type OptimizationStatusLabelProps = {
  * Optimization status label showing processing state with decode effect.
  *
  * - While optimizing: loops "optimizing..." decode animation
- * - When complete: shows "optimized! ✓" with glow effect, blinks, then fades out
+ * - When complete: shows "optimized ✓" with glow effect, blinks, then fades out
  */
 export function OptimizationStatusLabel({
   shouldStartDecode,
@@ -93,7 +93,7 @@ export function OptimizationStatusLabel({
             )}
             onAnimationEnd={() => setShouldBlink(false)}
           >
-            optimized ✓
+            Success ✓
           </span>
         )}
       </span>

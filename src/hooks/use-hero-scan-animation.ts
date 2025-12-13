@@ -22,7 +22,9 @@ type UseHeroScanAnimationState = {
  * This keeps the requestAnimationFrame loop stable and makes the UI component
  * mostly declarative.
  */
-export function useHeroScanAnimation(): UseHeroScanAnimationState {
+export function useHeroScanAnimation(
+  isEnabled: boolean = true,
+): UseHeroScanAnimationState {
   const [scanProgress, setScanProgress] = useState(0);
   const [isOptimized, setIsOptimized] = useState(false);
   const [shouldStartDecode, setShouldStartDecode] = useState(false);
@@ -47,6 +49,15 @@ export function useHeroScanAnimation(): UseHeroScanAnimationState {
   }, []);
 
   useEffect(() => {
+    if (!isEnabled) {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+      startTimeRef.current = null;
+      return;
+    }
+
     const animate = (timestamp: number): void => {
       if (startTimeRef.current === null) {
         startTimeRef.current = timestamp;
@@ -78,7 +89,7 @@ export function useHeroScanAnimation(): UseHeroScanAnimationState {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [animationRunId]);
+  }, [animationRunId, isEnabled]);
 
   return {
     scanProgress,

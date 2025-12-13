@@ -866,6 +866,64 @@
 }
 
 /* --------------------------------------------------------------------------
+   12.x Hero Skeleton Ripple
+   Center-out expanding rings for canvas warmup
+   -------------------------------------------------------------------------- */
+@keyframes hero-ripple {
+  0% {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+.animate-hero-ripple {
+  animation: hero-ripple 1.25s cubic-bezier(0.2, 0, 0.2, 1) infinite;
+}
+
+/* --------------------------------------------------------------------------
+   12.1 Hero Card Border Flash
+   Border highlight pulse used on "optimized" transition
+   -------------------------------------------------------------------------- */
+@keyframes hero-card-border-flash {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+  15% {
+    opacity: 1;
+    box-shadow:
+      0 0 32px rgba(16, 185, 129, 0.5),
+      0 0 60px rgba(16, 185, 129, 0.25),
+      inset 0 0 20px rgba(16, 185, 129, 0.15);
+  }
+  40% {
+    opacity: 0.7;
+    box-shadow:
+      0 0 24px rgba(16, 185, 129, 0.35),
+      0 0 45px rgba(16, 185, 129, 0.18),
+      inset 0 0 14px rgba(16, 185, 129, 0.1);
+  }
+  65% {
+    opacity: 0.35;
+    box-shadow:
+      0 0 16px rgba(16, 185, 129, 0.2),
+      0 0 30px rgba(16, 185, 129, 0.1),
+      inset 0 0 8px rgba(16, 185, 129, 0.05);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+/* --------------------------------------------------------------------------
    12.2 Character Decode Glow
    Subtle glow effect for decoded characters
    -------------------------------------------------------------------------- */

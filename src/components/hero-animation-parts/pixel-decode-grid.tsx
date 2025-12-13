@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 import {
   DECODE_END_EARLY_ROWS,
   DECODE_RAMP_ROWS,
   GRID_COLS,
   GRID_ROWS,
-  SCAN_GLOW_HALF_THICKNESS_PX,
+  OPTIMIZATION_HIGHLIGHT_DELAY_MS,
   SCRAMBLE_RANGE,
   accentRgba,
 } from "@/components/hero-animation-parts/constants";
@@ -18,7 +18,6 @@ import { PIXEL_BLOCKS } from "@/components/hero-animation-parts/pixel-blocks";
  * - Peak at 8%
  * - Easing: cubic-bezier(0, 0, 0.2, 1)
  */
-const FLASH_DELAY_MS = 500;
 const FLASH_DURATION_MS = 3000;
 const FLASH_PEAK_PERCENT = 0.08;
 const FLASH_END_INTENSITY_EPSILON = 0.002;
@@ -26,6 +25,13 @@ const FLASH_DECAY_RATE = 4;
 const FLASH_FADE_EASING_EXPONENT = 0.75;
 const FLASH_TAIL_DURATION_MS = 2000;
 const FLASH_TAIL_DECAY_RATE = 3;
+
+/**
+ * Scan beam styling constants.
+ */
+const BEAM_HEIGHT_PX = 60;
+const BEAM_LINE_HEIGHT_PX = 2;
+const BEAM_OFFSET_PX = BEAM_HEIGHT_PX / 2;
 
 /**
  * Calculates the base flash intensity during the main flash segment (0..1 progress).
@@ -70,11 +76,6 @@ function getFlashIntensityForElapsedMs(elapsedMs: number): number {
 
   const tailProgress = (elapsedMs - FLASH_DURATION_MS) / FLASH_TAIL_DURATION_MS;
   return mainIntensity * Math.exp(-FLASH_TAIL_DECAY_RATE * tailProgress);
-}
-
-function isDarkModeEnabled(): boolean {
-  if (typeof document === "undefined") return false;
-  return document.documentElement.classList.contains("dark");
 }
 
 type DrawFn = () => void;
@@ -176,54 +177,52 @@ function drawWebpGlow(options: {
   readonly height: number;
   readonly flashIntensity: number;
 }): void {
-  // Base values
-  const baseAlpha = 0.3;
-  const baseBlur = 3;
+  const intensity = clamp01(options.flashIntensity);
+  if (intensity <= 0.001) return;
 
-  // Flash peak values
-  const peakOuterAlpha = 0.5;
-  const peakOuterBlur = 28;
-  const peakMiddleAlpha = 0.8;
-  const peakMiddleBlur = 14;
-  const peakInnerAlpha = 1.0;
-  const peakInnerBlur = 6;
+  // NOTE:
+  // Canvas shadow/glow can "bleed" visually into neighboring cells depending on
+  // browser rasterization. To guarantee only WebP letter cells brighten, we
+  // render a glow-like overlay strictly *within* the block rect (no shadows).
+  const { ctx } = options;
+  ctx.save();
 
-  // Outer glow layer (large, soft)
-  drawGlowRect({
-    ctx: options.ctx,
-    x: options.x,
-    y: options.y,
-    width: options.width,
-    height: options.height,
-    color: accentRgba(peakOuterAlpha * options.flashIntensity),
-    blur: peakOuterBlur * options.flashIntensity,
-  });
+  // Inset a bit to avoid edge anti-aliasing "bleeding" into adjacent cells.
+  const inset = Math.min(1, Math.min(options.width, options.height) * 0.18);
+  const x = options.x + inset;
+  const y = options.y + inset;
+  const width = Math.max(0, options.width - inset * 2);
+  const height = Math.max(0, options.height - inset * 2);
+  if (width <= 0 || height <= 0) {
+    ctx.restore();
+    return;
+  }
 
-  // Middle glow layer
-  drawGlowRect({
-    ctx: options.ctx,
-    x: options.x,
-    y: options.y,
-    width: options.width,
-    height: options.height,
-    color: accentRgba(peakMiddleAlpha * options.flashIntensity),
-    blur: peakMiddleBlur * options.flashIntensity,
-  });
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+  const radius = Math.max(width, height) * 0.9;
 
-  // Inner bright core (interpolates with base glow)
-  drawGlowRect({
-    ctx: options.ctx,
-    x: options.x,
-    y: options.y,
-    width: options.width,
-    height: options.height,
-    color: accentRgba(
-      baseAlpha + (peakInnerAlpha - baseAlpha) * options.flashIntensity,
-    ),
-    blur: baseBlur + (peakInnerBlur - baseBlur) * options.flashIntensity,
-  });
+  // Soft inner glow (radial, clipped by the rect via fillRect bounds)
+  const radial = ctx.createRadialGradient(
+    centerX,
+    centerY,
+    0,
+    centerX,
+    centerY,
+    radius,
+  );
+  radial.addColorStop(0, accentRgba(clamp01(1.15 * intensity)));
+  radial.addColorStop(0.55, accentRgba(clamp01(0.55 * intensity)));
+  radial.addColorStop(1, "transparent");
+  ctx.fillStyle = radial;
+  ctx.fillRect(x, y, width, height);
 
-  options.ctx.shadowBlur = 0;
+  // Bright core (slightly additive, still inset so it won't bleed)
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = accentRgba(clamp01(0.48 * intensity));
+  ctx.fillRect(x, y, width, height);
+
+  ctx.restore();
 }
 
 /**
@@ -257,6 +256,7 @@ type PixelDecodeGridProps = {
   readonly scanProgress: number;
   readonly isOptimized: boolean;
   readonly hasStarted: boolean;
+  readonly onFirstDraw: (() => void) | undefined;
 };
 
 /**
@@ -270,10 +270,12 @@ export function PixelDecodeGrid({
   scanProgress,
   isOptimized,
   hasStarted,
+  onFirstDraw,
 }: PixelDecodeGridProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<DrawFn>(() => {});
+  const hasNotifiedFirstDrawRef = useRef(false);
 
   // Flash animation state
   const prevIsOptimizedRef = useRef(isOptimized);
@@ -282,9 +284,9 @@ export function PixelDecodeGrid({
   const rafIdRef = useRef<number | null>(null);
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Detect when isOptimized transitions to true and trigger flash (dark mode only)
+  // Detect when isOptimized transitions to true and trigger flash
   useEffect(() => {
-    if (isOptimized && !prevIsOptimizedRef.current && isDarkModeEnabled()) {
+    if (isOptimized && !prevIsOptimizedRef.current) {
       // Delay to wait for fade-in animation to complete
       delayTimerRef.current = setTimeout(() => {
         flashStartTimeRef.current = performance.now();
@@ -313,7 +315,7 @@ export function PixelDecodeGrid({
         };
 
         rafIdRef.current = requestAnimationFrame(animateFlash);
-      }, FLASH_DELAY_MS);
+      }, OPTIMIZATION_HIGHLIGHT_DELAY_MS);
     }
     prevIsOptimizedRef.current = isOptimized;
 
@@ -364,6 +366,10 @@ export function PixelDecodeGrid({
       const x = layout.padding + block.col * (layout.cellWidth + layout.gap);
       const y = layout.padding + block.row * (layout.cellHeight + layout.gap);
 
+      // Draw stable background cell (same for JPEG/WebP states)
+      ctx.fillStyle = accentRgba(block.backgroundOpacity);
+      ctx.fillRect(x, y, layout.cellWidth, layout.cellHeight);
+
       // Calculate visual state
       const distanceFromScan = currentScanRow - block.row;
       const isInTextBand =
@@ -392,17 +398,22 @@ export function PixelDecodeGrid({
       const opacity = decodeProgress;
       const scale = decodeProgress;
 
-      // Draw JPEG block (fading out)
-      if (showJpeg || opacity < 0.99) {
-        const jpegOpacity = showJpeg
-          ? block.jpegOpacity
-          : block.jpegOpacity * (1 - opacity);
+      // Draw JPEG letter cells (fade out as decode progresses)
+      if (block.isJpegPattern) {
+        const jpegFade =
+          isOptimized || decoded
+            ? 0
+            : scrambling
+              ? 0
+              : isInTextBand
+                ? 1 - opacity
+                : 1;
+        const jpegOpacity = block.jpegPatternOpacity * clamp01(jpegFade);
         if (jpegOpacity > 0.01) {
           ctx.fillStyle = accentRgba(jpegOpacity);
           ctx.fillRect(x, y, layout.cellWidth, layout.cellHeight);
 
-          // Glow for JPEG pattern blocks
-          if (block.isJpegPattern && jpegOpacity > 0.3) {
+          if (jpegOpacity > 0.3) {
             drawGlowRect({
               ctx,
               x,
@@ -423,9 +434,9 @@ export function PixelDecodeGrid({
         ctx.fillRect(x, y, layout.cellWidth, layout.cellHeight);
       }
 
-      // Draw WebP block (scaling in)
-      if (scale > 0.01) {
-        const webpOpacity = block.webpOpacity * opacity;
+      // Draw WebP letter cells only (scale in)
+      if (block.isWebpPattern && scale > 0.01) {
+        const webpOpacity = clamp01(block.webpPatternOpacity * opacity);
         const scaledWidth = layout.cellWidth * scale;
         const scaledHeight = layout.cellHeight * scale;
         const offsetX = (layout.cellWidth - scaledWidth) / 2;
@@ -434,8 +445,7 @@ export function PixelDecodeGrid({
         ctx.fillStyle = accentRgba(webpOpacity);
         ctx.fillRect(x + offsetX, y + offsetY, scaledWidth, scaledHeight);
 
-        // Glow for WebP pattern blocks (smoothly enhanced during flash)
-        if (block.isWebpPattern && webpOpacity > 0.3) {
+        if (webpOpacity > 0.3) {
           drawWebpGlow({
             ctx,
             x: x + offsetX,
@@ -448,43 +458,59 @@ export function PixelDecodeGrid({
       }
     }
 
-    // Draw scan line glow
-    if (!isOptimized && scanProgress < 100) {
-      const isScanInTextBand =
-        currentScanRow >= textBounds.minRow &&
-        currentScanRow <= textBounds.maxRow;
-      if (!isScanInTextBand) return;
-
-      const scanY = (scanProgress / 100) * containerHeight;
-      const glow = SCAN_GLOW_HALF_THICKNESS_PX;
-      const gradient = ctx.createLinearGradient(
-        0,
-        scanY - glow,
-        0,
-        scanY + glow,
-      );
-      gradient.addColorStop(0, "transparent");
-      gradient.addColorStop(0.5, accentRgba(0.2));
-      gradient.addColorStop(1, "transparent");
-      ctx.fillStyle = gradient;
-
-      // Clamp glow drawing into the text band's vertical area
-      const bandTop =
-        layout.padding + textBounds.minRow * (layout.cellHeight + layout.gap);
-      const bandBottom =
-        layout.padding +
-        (textBounds.maxRow + 1) * layout.cellHeight +
-        textBounds.maxRow * layout.gap;
-
-      const rectTop = scanY - glow;
-      const rectBottom = scanY + glow;
-      const clampedTop = Math.max(rectTop, bandTop);
-      const clampedBottom = Math.min(rectBottom, bandBottom);
-
-      const height = clampedBottom - clampedTop;
-      if (height <= 0) return;
-      ctx.fillRect(0, clampedTop, containerWidth, height);
+    if (!hasNotifiedFirstDrawRef.current) {
+      hasNotifiedFirstDrawRef.current = true;
+      if (onFirstDraw !== undefined) onFirstDraw();
     }
+
+    // Draw scan beam (gradient band + bright line + glow), spanning the full area.
+    if (!hasStarted) return;
+    if (isOptimized) return;
+    if (scanProgress >= 100) return;
+
+    // Map scan progress to the full container height using the beam line's center.
+    // The gradient band/glow can overflow the boundaries (i.e. "shadow doesn't count").
+    const beamCenterY = (scanProgress / 100) * containerHeight;
+    const beamTop = beamCenterY - BEAM_OFFSET_PX;
+
+    ctx.save();
+
+    // Beam gradient background
+    const beamGradient = ctx.createLinearGradient(
+      0,
+      beamTop,
+      0,
+      beamTop + BEAM_HEIGHT_PX,
+    );
+    beamGradient.addColorStop(0, "rgba(16, 185, 129, 0)");
+    beamGradient.addColorStop(0.5, "rgba(16, 185, 129, 0.3)");
+    beamGradient.addColorStop(1, "rgba(16, 185, 129, 0)");
+    ctx.fillStyle = beamGradient;
+    const visibleBeamTop = Math.max(0, beamTop);
+    const visibleBeamBottom = Math.min(
+      containerHeight,
+      beamTop + BEAM_HEIGHT_PX,
+    );
+    const visibleBeamHeight = visibleBeamBottom - visibleBeamTop;
+    if (visibleBeamHeight > 0) {
+      ctx.fillRect(0, visibleBeamTop, containerWidth, visibleBeamHeight);
+    }
+
+    // Beam line with glow (approximation of box-shadow)
+    ctx.beginPath();
+    ctx.moveTo(0, beamCenterY);
+    ctx.lineTo(containerWidth, beamCenterY);
+    ctx.lineWidth = BEAM_LINE_HEIGHT_PX;
+    ctx.strokeStyle = "rgba(16, 185, 129, 0.6)";
+    ctx.shadowColor = "rgba(16, 185, 129, 0.8)";
+    ctx.shadowBlur = 15;
+    ctx.stroke();
+
+    // Crisp line on top
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+
+    ctx.restore();
   }, [scanProgress, isOptimized, hasStarted]);
 
   // Keep a stable ref to the latest draw implementation.
@@ -494,7 +520,7 @@ export function PixelDecodeGrid({
   }, [draw]);
 
   // Redraw on state changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     draw();
   }, [draw]);
 

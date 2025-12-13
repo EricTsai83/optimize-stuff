@@ -12,12 +12,19 @@ export const GRID_COLS = 38;
 export const GRID_ROWS = 17;
 
 /**
+ * Delay (ms) before we apply "optimized" highlight accents.
+ *
+ * Keep this in sync with any visual "flash" / highlight timing.
+ */
+export const OPTIMIZATION_HIGHLIGHT_DELAY_MS = 500;
+
+/**
  * How many rows *before* the scan beam reaches a row we begin decoding.
  *
  * This uses a continuous ramp so that at the exact moment the beam reaches a row
  * (distanceFromScan === 0), it is already fully decoded.
  */
-export const DECODE_RAMP_ROWS = 4.8;
+export const DECODE_RAMP_ROWS = 2.8;
 
 /**
  * Finish the decode this many rows *before* the scan exits the text band.

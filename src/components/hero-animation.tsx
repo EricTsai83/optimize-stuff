@@ -1,15 +1,18 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+import type { CSSProperties, TransitionEvent } from "react";
+
 import { RotateCcw } from "lucide-react";
 
 import { OptimizationStatusLabel } from "@/components/hero-animation-parts/optimization-status-label";
 import {
+  OPTIMIZATION_HIGHLIGHT_DELAY_MS,
   OPTIMIZED_SIZE_RATIO,
   ORIGINAL_SIZE_KB,
   SIZE_REDUCTION_RATE,
 } from "@/components/hero-animation-parts/constants";
 import { PixelDecodeGrid } from "@/components/hero-animation-parts/pixel-decode-grid";
-import { ScanBeam } from "@/components/hero-animation-parts/scan-beam";
 import { useHeroScanAnimation } from "@/hooks/use-hero-scan-animation";
 import { cn } from "@/lib/utils";
 
@@ -23,10 +26,6 @@ function getCurrentSizeKb(scanProgress: number, isOptimized: boolean): number {
   );
 }
 
-function getBeamPosition(scanProgress: number): number {
-  return Math.min(scanProgress, 100);
-}
-
 /**
  * Hero section animation component.
  *
@@ -36,14 +35,62 @@ function getBeamPosition(scanProgress: number): number {
  * - File size reduction display
  */
 export function HeroAnimation() {
+  const [hasGridDrawnOnce, setHasGridDrawnOnce] = useState(false);
+  const [isGridFadeInComplete, setIsGridFadeInComplete] = useState(false);
   const { scanProgress, isOptimized, shouldStartDecode, hasStarted, restart } =
-    useHeroScanAnimation();
+    useHeroScanAnimation(isGridFadeInComplete);
+
+  const handleGridFirstDraw = useCallback((): void => {
+    setHasGridDrawnOnce(true);
+  }, []);
+
+  const handleGridFadeInTransitionEnd = useCallback(
+    (event: TransitionEvent<HTMLDivElement>): void => {
+      if (event.propertyName !== "opacity") return;
+      if (!hasGridDrawnOnce) return;
+      setIsGridFadeInComplete(true);
+    },
+    [hasGridDrawnOnce],
+  );
+
+  const handleRestart = useCallback((): void => {
+    // Keep the grid visible on restart (no skeleton flash),
+    // and just restart the scan/decode animation.
+    restart();
+  }, [restart]);
+
+  useEffect(() => {
+    if (hasGridDrawnOnce) return;
+
+    // Fallback: if the first canvas draw can't be detected (e.g. 0-size on first layout),
+    // still reveal the grid after a short delay so the UI doesn't get stuck on the skeleton.
+    const timer = setTimeout(() => {
+      setHasGridDrawnOnce(true);
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [hasGridDrawnOnce]);
+
+  useEffect(() => {
+    if (!hasGridDrawnOnce) return;
+    if (isGridFadeInComplete) return;
+
+    // Fallback for environments that don't reliably fire transitionend.
+    const timer = setTimeout(() => {
+      setIsGridFadeInComplete(true);
+    }, 550);
+
+    return () => clearTimeout(timer);
+  }, [hasGridDrawnOnce, isGridFadeInComplete]);
+
+  const heroCardStyle: CSSProperties & {
+    readonly ["--hero-opt-delay"]: string;
+  } = {
+    "--hero-opt-delay": `${OPTIMIZATION_HIGHLIGHT_DELAY_MS}ms`,
+  };
 
   // Calculate current file size based on progress
   const currentSize = getCurrentSizeKb(scanProgress, isOptimized);
-
-  // Scan beam position (0-100%)
-  const beamPosition = getBeamPosition(scanProgress);
 
   return (
     <div className="relative h-[400px] w-[400px]">
@@ -70,31 +117,62 @@ export function HeroAnimation() {
 
       {/* Main card container */}
       <div
+        style={heroCardStyle}
         className={cn(
-          "absolute inset-0 rounded-lg border transition-all duration-300",
+          "absolute inset-0 rounded-lg border transition-[box-shadow,background-color,border-color] ease-out will-change-[box-shadow,border-color,background-color]",
+          "before:ring-accent/40 before:pointer-events-none before:absolute before:inset-0 before:rounded-lg before:opacity-0 before:ring-2 before:content-[''] before:ring-inset",
           isOptimized
-            ? "border-accent/30 bg-white/[0.024]"
-            : "border-accent/20 bg-white/[0.018]",
+            ? [
+                "border-accent/30 ring-accent/20 bg-white/[0.024] ring-1 ring-inset",
+                "[transition-delay:var(--hero-opt-delay)] duration-200",
+                "before:animate-[hero-card-border-flash_650ms_cubic-bezier(0.25,0.1,0.25,1)_both] before:[animation-delay:var(--hero-opt-delay)]",
+              ]
+            : "border-accent/10 bg-white/[0.018] [transition-delay:0ms] duration-500",
         )}
       >
         {/* Image placeholder area with pixel decode effect */}
         <div
           className={cn(
             "absolute top-2 right-2 left-2 overflow-hidden rounded transition-colors duration-300",
-            isOptimized ? "bg-accent/8" : "bg-accent/5",
+            // Keep the background stable so the canvas grid doesn't appear to brighten at 100%.
+            "bg-accent/5",
           )}
           style={{ height: "calc(100% - 80px)" }}
         >
-          <PixelDecodeGrid
-            scanProgress={scanProgress}
-            isOptimized={isOptimized}
-            hasStarted={hasStarted}
-          />
+          {/* Skeleton overlay (covers the initial canvas blank frame) */}
+          <div
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute inset-0 z-10 transition-opacity duration-500 will-change-[opacity]",
+              hasGridDrawnOnce ? "opacity-0" : "opacity-100",
+            )}
+          >
+            <div className="from-accent/12 to-accent/10 absolute inset-0 bg-linear-to-b via-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.18)_0%,transparent_68%)]" />
+            <div className="animate-pulse-soft absolute inset-0 bg-white/4 dark:bg-black/6" />
 
-          {/* Scanning beam effect (kept within the image area) */}
-          {!isOptimized && scanProgress < 100 && (
-            <ScanBeam position={beamPosition} />
-          )}
+            {/* Center-out ripple rings */}
+            <div className="absolute top-1/2 left-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2">
+              <div className="animate-hero-ripple border-accent/35 absolute inset-0 rounded-full border shadow-[0_0_22px_rgba(16,185,129,0.18)]" />
+              <div className="animate-hero-ripple border-accent/25 absolute inset-0 rounded-full border shadow-[0_0_26px_rgba(16,185,129,0.14)] [animation-delay:240ms]" />
+            </div>
+          </div>
+
+          {/* Canvas (fade in after first draw) */}
+          <div
+            className={cn(
+              "absolute inset-0 transition-opacity duration-500 will-change-[opacity]",
+              hasGridDrawnOnce ? "opacity-100" : "opacity-0",
+            )}
+            onTransitionEnd={handleGridFadeInTransitionEnd}
+          >
+            <PixelDecodeGrid
+              scanProgress={scanProgress}
+              isOptimized={isOptimized}
+              hasStarted={hasStarted}
+              onFirstDraw={handleGridFirstDraw}
+            />
+          </div>
         </div>
 
         {/* Bottom info section */}
@@ -114,7 +192,7 @@ export function HeroAnimation() {
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
             <button
               type="button"
-              onClick={isOptimized ? restart : undefined}
+              onClick={isOptimized ? handleRestart : undefined}
               disabled={!isOptimized}
               aria-label={
                 isOptimized

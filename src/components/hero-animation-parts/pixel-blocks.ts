@@ -1,4 +1,7 @@
-import { GRID_COLS, GRID_ROWS } from "@/components/hero-animation-parts/constants";
+import {
+  GRID_COLS,
+  GRID_ROWS,
+} from "@/components/hero-animation-parts/constants";
 import {
   JPEG_PATTERN,
   SCRAMBLE_PATTERN,
@@ -15,10 +18,12 @@ export type PixelBlock = {
   readonly offsetY: number;
   /** JPEG artifact simulation - size variation */
   readonly jpegSizeMultiplier: number;
-  /** JPEG artifact simulation - opacity variation */
-  readonly jpegOpacity: number;
-  /** WebP clean appearance - uniform sizing */
-  readonly webpOpacity: number;
+  /** Shared background opacity for non-letter cells (stable across JPEG/WebP) */
+  readonly backgroundOpacity: number;
+  /** JPEG letter cells opacity (stronger than background) */
+  readonly jpegPatternOpacity: number;
+  /** WebP letter cells opacity (stronger than background) */
+  readonly webpPatternOpacity: number;
   /** Decode animation delay based on position */
   readonly decodeDelay: number;
   /** Whether this block is part of the JPEG text pattern */
@@ -88,6 +93,13 @@ function generatePixelBlocks(): readonly PixelBlock[] {
       const rand5 = roundToPrecision(getPseudoRandom(seed, 5), 3);
       const rand6 = roundToPrecision(getPseudoRandom(seed, 6), 3);
 
+      // Shared background grid opacity so JPEG/WebP have the same "base grid" look.
+      // Pattern blocks still get their own stronger opacities below.
+      const backgroundOpacity = roundToPrecision(0.04 + rand4 * 0.07, 3);
+      const jpegPatternOpacity = roundToPrecision(0.5 + rand4 * 0.3, 3);
+      // Make WebP letters more prominent after decode completes.
+      const webpPatternOpacity = roundToPrecision(0.74 + rand5 * 0.2, 3);
+
       blocks.push({
         id: `${row}-${col}`,
         row,
@@ -97,16 +109,9 @@ function generatePixelBlocks(): readonly PixelBlock[] {
         offsetY: roundToPrecision((rand2 - 0.5) * 2, 3),
         // JPEG blocks vary in size (compression artifacts)
         jpegSizeMultiplier: roundToPrecision(0.7 + rand3 * 0.6, 3),
-        // JPEG pattern blocks are more visible
-        jpegOpacity: roundToPrecision(
-          isJpegPattern ? 0.5 + rand4 * 0.3 : 0.05 + rand4 * 0.08,
-          3,
-        ),
-        // WebP pattern blocks are more visible
-        webpOpacity: roundToPrecision(
-          isWebpPattern ? 0.6 + rand5 * 0.2 : 0.03 + rand5 * 0.05,
-          3,
-        ),
+        backgroundOpacity,
+        jpegPatternOpacity,
+        webpPatternOpacity,
         // Decode delay based on row (top to bottom with scan)
         decodeDelay: roundToPrecision(rand6 * 80, 3),
         isJpegPattern,
