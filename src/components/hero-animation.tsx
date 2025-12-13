@@ -151,10 +151,25 @@ export function HeroAnimation() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.18)_0%,transparent_68%)]" />
             <div className="animate-pulse-soft absolute inset-0 bg-white/4 dark:bg-black/6" />
 
-            {/* Center-out ripple rings */}
-            <div className="absolute top-1/2 left-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2">
-              <div className="animate-hero-ripple border-accent/35 absolute inset-0 rounded-full border shadow-[0_0_22px_rgba(16,185,129,0.18)]" />
-              <div className="animate-hero-ripple border-accent/25 absolute inset-0 rounded-full border shadow-[0_0_26px_rgba(16,185,129,0.14)] [animation-delay:240ms]" />
+            {/* Soundwave ripple rings - center out */}
+            <div className="absolute top-1/2 left-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2">
+              {/* Core pulse dot */}
+              <div className="bg-accent/50 absolute top-1/2 left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-[0_0_16px_rgba(16,185,129,0.7)]" />
+
+              {/* Wave 1 - fastest, most visible */}
+              <div className="animate-hero-soundwave border-accent/45 absolute inset-0 rounded-full border-4 shadow-[0_0_24px_rgba(16,185,129,0.25)]" />
+
+              {/* Wave 2 */}
+              <div className="animate-hero-soundwave border-accent/35 absolute inset-0 rounded-full border-[3px] shadow-[0_0_20px_rgba(16,185,129,0.2)] [animation-delay:400ms]" />
+
+              {/* Wave 3 */}
+              <div className="animate-hero-soundwave border-accent/28 absolute inset-0 rounded-full border-2 shadow-[0_0_16px_rgba(16,185,129,0.15)] [animation-delay:800ms]" />
+
+              {/* Wave 4 */}
+              <div className="animate-hero-soundwave border-accent/20 absolute inset-0 rounded-full border-2 shadow-[0_0_12px_rgba(16,185,129,0.1)] [animation-delay:1200ms]" />
+
+              {/* Wave 5 - slowest, most subtle */}
+              <div className="animate-hero-soundwave border-accent/14 absolute inset-0 rounded-full border shadow-[0_0_10px_rgba(16,185,129,0.08)] [animation-delay:1600ms]" />
             </div>
           </div>
 

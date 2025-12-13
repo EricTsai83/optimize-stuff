@@ -866,25 +866,28 @@
 }
 
 /* --------------------------------------------------------------------------
-   12.x Hero Skeleton Ripple
-   Center-out expanding rings for canvas warmup
+   12.x Hero Skeleton Soundwave
+   Center-out expanding rings like audio waves emanating from center
    -------------------------------------------------------------------------- */
-@keyframes hero-ripple {
+@keyframes hero-soundwave {
   0% {
-    transform: scale(0.35);
+    transform: scale(0.15);
     opacity: 0;
   }
-  15% {
-    opacity: 0.75;
+  10% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
   }
   100% {
-    transform: scale(1.25);
+    transform: scale(1.6);
     opacity: 0;
   }
 }
 
-.animate-hero-ripple {
-  animation: hero-ripple 1.25s cubic-bezier(0.2, 0, 0.2, 1) infinite;
+.animate-hero-soundwave {
+  animation: hero-soundwave 2s cubic-bezier(0.1, 0, 0.3, 1) infinite;
 }
 
 /* --------------------------------------------------------------------------
