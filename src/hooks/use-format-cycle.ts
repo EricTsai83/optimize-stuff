@@ -12,17 +12,24 @@ const IMAGE_FORMATS = [
   ".raw",
 ] as const;
 
+type ImageFormat = (typeof IMAGE_FORMATS)[number];
+
 /** Interval in ms between format switches */
 const FORMAT_CYCLE_INTERVAL_MS = 120;
 
+/** Final optimized format */
+const OPTIMIZED_FORMAT = ".webp" as const;
+
 /**
- * Custom hook to cycle through image formats until optimized.
- * When `isOptimized` is false, cycles through various formats.
- * When `isOptimized` becomes true, returns ".webp".
+ * Cycles through image formats until optimization completes.
+ *
+ * @param isOptimized - Whether optimization is complete
+ * @returns Current format string (e.g., ".jpeg", ".webp")
  */
 export function useFormatCycle(isOptimized: boolean): string {
   const [formatIndex, setFormatIndex] = useState(0);
 
+  // Cycle through formats while not optimized
   useEffect(() => {
     if (isOptimized) return;
 
@@ -33,7 +40,7 @@ export function useFormatCycle(isOptimized: boolean): string {
     return () => clearInterval(intervalId);
   }, [isOptimized]);
 
-  // Reset index when restarting (isOptimized goes from true to false)
+  // Reset index when restarting
   useEffect(() => {
     if (!isOptimized) {
       setFormatIndex(0);
@@ -41,9 +48,14 @@ export function useFormatCycle(isOptimized: boolean): string {
   }, [isOptimized]);
 
   if (isOptimized) {
-    return ".webp";
+    return OPTIMIZED_FORMAT;
   }
 
-  // Default to first format if index is somehow out of bounds
-  return IMAGE_FORMATS[formatIndex] ?? IMAGE_FORMATS[0];
+  return getFormatAtIndex(formatIndex);
+}
+
+function getFormatAtIndex(index: number): ImageFormat {
+  const format = IMAGE_FORMATS[index];
+  // Fallback to first format if index is out of bounds
+  return format ?? IMAGE_FORMATS[0];
 }

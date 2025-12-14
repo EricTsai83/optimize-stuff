@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Total scan animation duration (ms) */
-const SCAN_DURATION = 1600;
+const SCAN_DURATION_MS = 1600;
 
 /** Progress percentage at which decode animation starts */
 const DECODE_START_PROGRESS = 10;
 
-type UseHeroScanAnimationState = {
+type UseHeroScanAnimationResult = {
   readonly scanProgress: number;
   readonly isOptimized: boolean;
   readonly shouldStartDecode: boolean;
@@ -17,14 +17,14 @@ type UseHeroScanAnimationState = {
 };
 
 /**
- * Encapsulates the scan animation state machine used by {@link HeroAnimation}.
+ * Encapsulates the scan animation state machine used by HeroAnimation.
  *
- * This keeps the requestAnimationFrame loop stable and makes the UI component
- * mostly declarative.
+ * Manages the requestAnimationFrame loop and exposes a declarative API
+ * for the UI component.
  */
 export function useHeroScanAnimation(
   isEnabled: boolean = true,
-): UseHeroScanAnimationState {
+): UseHeroScanAnimationResult {
   const [scanProgress, setScanProgress] = useState(0);
   const [isOptimized, setIsOptimized] = useState(false);
   const [shouldStartDecode, setShouldStartDecode] = useState(false);
@@ -66,7 +66,7 @@ export function useHeroScanAnimation(
       }
 
       const elapsed = timestamp - startTimeRef.current;
-      const progress = Math.min((elapsed / SCAN_DURATION) * 100, 100);
+      const progress = Math.min((elapsed / SCAN_DURATION_MS) * 100, 100);
 
       setScanProgress(progress);
 
