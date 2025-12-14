@@ -55,7 +55,7 @@ export function OptimizationStatusLabel({
   }, [isOptimized]);
 
   return (
-    <div className="absolute bottom-[30px] left-4 flex items-center gap-1.5 font-mono text-sm">
+    <div className="flex items-center gap-1.5 font-mono text-sm">
       {/* Status label with decode effect */}
       <span
         className={cn(

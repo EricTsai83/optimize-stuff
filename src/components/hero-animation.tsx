@@ -1,18 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { CSSProperties, TransitionEvent } from "react";
+import type { TransitionEvent } from "react";
 
 import { RotateCcw } from "lucide-react";
 
-import { OptimizationStatusLabel } from "@/components/hero-animation-parts/optimization-status-label";
 import {
   OPTIMIZATION_HIGHLIGHT_DELAY_MS,
   OPTIMIZED_SIZE_RATIO,
   ORIGINAL_SIZE_KB,
   SIZE_REDUCTION_RATE,
 } from "@/components/hero-animation-parts/constants";
+import { HighlightValue } from "@/components/hero-animation-parts/highlight-value";
+import { OptimizationStatusLabel } from "@/components/hero-animation-parts/optimization-status-label";
 import { PixelDecodeGrid } from "@/components/hero-animation-parts/pixel-decode-grid";
+import { useFormatCycle } from "@/hooks/use-format-cycle";
 import { useHeroScanAnimation } from "@/hooks/use-hero-scan-animation";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +25,12 @@ function getCurrentSizeKb(scanProgress: number, isOptimized: boolean): number {
 
   return Math.round(
     ORIGINAL_SIZE_KB * (1 - scanProgress * SIZE_REDUCTION_RATE),
+  );
+}
+
+function getSizeReductionPercent(currentSize: number): number {
+  return Math.round(
+    ((ORIGINAL_SIZE_KB - currentSize) / ORIGINAL_SIZE_KB) * 100,
   );
 }
 
@@ -39,6 +47,8 @@ export function HeroAnimation() {
   const [isGridFadeInComplete, setIsGridFadeInComplete] = useState(false);
   const { scanProgress, isOptimized, shouldStartDecode, hasStarted, restart } =
     useHeroScanAnimation(isGridFadeInComplete);
+
+  const currentFormat = useFormatCycle(isOptimized);
 
   const handleGridFirstDraw = useCallback((): void => {
     setHasGridDrawnOnce(true);
@@ -83,18 +93,19 @@ export function HeroAnimation() {
     return () => clearTimeout(timer);
   }, [hasGridDrawnOnce, isGridFadeInComplete]);
 
-  const heroCardStyle: CSSProperties & {
-    readonly ["--hero-opt-delay"]: string;
-  } = {
-    "--hero-opt-delay": `${OPTIMIZATION_HIGHLIGHT_DELAY_MS}ms`,
-  };
-
   // Calculate current file size based on progress
   const currentSize = getCurrentSizeKb(scanProgress, isOptimized);
+  const reductionPercent = getSizeReductionPercent(currentSize);
 
   return (
     <div className="relative h-[400px] w-[400px]">
-      {/* Background grid pattern */}
+      {/* Optimization status label (left) */}
+      <div className="absolute top-7 right-7">
+        <OptimizationStatusLabel
+          shouldStartDecode={shouldStartDecode}
+          isOptimized={isOptimized}
+        />
+      </div>
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.02]"
         style={{
@@ -117,15 +128,14 @@ export function HeroAnimation() {
 
       {/* Main card container */}
       <div
-        style={heroCardStyle}
         className={cn(
           "absolute inset-0 rounded-lg border transition-[box-shadow,background-color,border-color] ease-out will-change-[box-shadow,border-color,background-color]",
           "before:ring-accent/40 before:pointer-events-none before:absolute before:inset-0 before:rounded-lg before:opacity-0 before:ring-2 before:content-[''] before:ring-inset",
           isOptimized
             ? [
                 "border-accent/30 ring-accent/20 bg-white/[0.024] ring-1 ring-inset",
-                "[transition-delay:var(--hero-opt-delay)] duration-200",
-                "before:animate-[hero-card-border-flash_650ms_cubic-bezier(0.25,0.1,0.25,1)_both] before:[animation-delay:var(--hero-opt-delay)]",
+                "[transition-delay:500ms] duration-200",
+                "before:animate-[hero-card-border-flash_650ms_cubic-bezier(0.25,0.1,0.25,1)_both] before:[animation-delay:500ms]",
               ]
             : "border-accent/10 bg-white/[0.018] [transition-delay:0ms] duration-500",
         )}
@@ -192,15 +202,58 @@ export function HeroAnimation() {
 
         {/* Bottom info section */}
         <div className="absolute right-0 bottom-0 left-0 h-[72px] px-4 pb-2">
-          {/* Optimization status label (left) */}
-          <OptimizationStatusLabel
-            shouldStartDecode={shouldStartDecode}
-            isOptimized={isOptimized}
-          />
+          {/* File size & optimization stats (right) */}
+          <div className="absolute right-4 bottom-2 flex flex-col items-end gap-1 font-mono text-xs">
+            {/* Format conversion */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-accent/90 w-18 text-right font-bold tracking-wide uppercase">
+                Format:
+              </span>
+              <HighlightValue
+                isHighlighted={isOptimized}
+                delay={OPTIMIZATION_HIGHLIGHT_DELAY_MS}
+                className={cn(
+                  "w-12 text-right font-semibold tabular-nums transition-colors duration-300",
+                  isOptimized ? "text-accent/90" : "text-accent/50",
+                )}
+              >
+                {currentFormat}
+              </HighlightValue>
+            </div>
 
-          {/* File size display (right) */}
-          <div className="text-accent/50 absolute right-4 bottom-[30px] font-mono text-sm font-semibold">
-            {currentSize}KB
+            {/* Current file size */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-accent/90 w-18 text-right font-bold tracking-wide uppercase">
+                Size:
+              </span>
+              <HighlightValue
+                isHighlighted={isOptimized}
+                delay={OPTIMIZATION_HIGHLIGHT_DELAY_MS}
+                className={cn(
+                  "w-12 text-right font-semibold tabular-nums transition-colors duration-300",
+                  isOptimized ? "text-accent/90" : "text-accent/50",
+                )}
+              >
+                {currentSize.toLocaleString()}KB
+              </HighlightValue>
+            </div>
+
+            {/* Size reduction percentage */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-accent/90 w-18 text-right font-bold tracking-wide uppercase">
+                Saved:
+              </span>
+              <HighlightValue
+                isHighlighted={isOptimized}
+                delay={OPTIMIZATION_HIGHLIGHT_DELAY_MS}
+                className={cn(
+                  "w-12 text-right font-semibold tabular-nums transition-colors duration-300",
+                  isOptimized ? "text-accent/90" : "text-accent/50",
+                )}
+              >
+                {reductionPercent > 0 ? `${reductionPercent}%` : "0%"}
+              </HighlightValue>
+            </div>
           </div>
 
           {/* Progress ring / replay button */}
@@ -292,16 +345,6 @@ export function HeroAnimation() {
             </button>
           </div>
         </div>
-
-        {/* Size savings badge (shown after optimization) */}
-        {isOptimized && (
-          <div
-            className="bg-accent/15 text-accent/90 animate-fade-in absolute top-6 right-6 rounded-full px-3 py-1 font-mono text-xs font-semibold"
-            style={{ animationDuration: "0.3s" }}
-          >
-            size: -65%
-          </div>
-        )}
       </div>
     </div>
   );
