@@ -24,7 +24,7 @@ export function FileInfoPanel({
   isOptimized,
 }: FileInfoPanelProps) {
   return (
-    <div className="absolute right-4 bottom-2 flex flex-col items-end gap-1 font-mono text-xs">
+    <div className="absolute right-4 bottom-3 flex flex-col items-end gap-1 font-mono text-xs">
       <StatRow label="Format" isOptimized={isOptimized}>
         {currentFormat}
       </StatRow>
@@ -47,14 +47,14 @@ type StatRowProps = {
 function StatRow({ label, isOptimized, children }: StatRowProps) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-accent/90 w-18 text-right font-bold tracking-wide uppercase">
+      <span className="text-accent/90 w-18 text-right text-[10px] font-bold tracking-wide uppercase">
         {label}:
       </span>
       <HighlightValue
         isHighlighted={isOptimized}
         delay={OPTIMIZATION_HIGHLIGHT_DELAY_MS}
         className={cn(
-          "w-12 text-right font-semibold tabular-nums transition-colors duration-300",
+          "w-12 text-right text-[10px] font-semibold tabular-nums transition-colors duration-300",
           isOptimized ? "text-accent/90" : "text-accent/50",
         )}
       >
