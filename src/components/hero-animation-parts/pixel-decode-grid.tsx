@@ -327,10 +327,15 @@ export function PixelDecodeGrid({
       if (onFirstDraw !== undefined) onFirstDraw();
     }
 
-    // Draw scan beam
+    // Draw scan beam (continues past 100% to exit off-screen)
     if (!state.hasStarted) return;
-    if (state.isOptimized) return;
-    if (state.scanProgress >= 100) return;
+
+    // Calculate if beam is still visible (using progress beyond 100 for exit)
+    const beamY = (state.scanProgress / 100) * containerHeight;
+    const beamHalfHeight = 30; // Half of BEAM_HEIGHT_PX in canvas-utils
+    const beamIsVisible = beamY - beamHalfHeight < containerHeight;
+
+    if (!beamIsVisible) return;
 
     drawScanBeam({
       ctx,

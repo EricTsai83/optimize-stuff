@@ -6,6 +6,15 @@ const SCAN_DURATION_MS = 1600;
 /** Progress percentage at which decode animation starts */
 const DECODE_START_PROGRESS = 10;
 
+/** Progress percentage at which optimization is triggered */
+const OPTIMIZE_PROGRESS = 100;
+
+/**
+ * Progress percentage at which beam exits (moves off screen).
+ * This allows the beam to continue moving down after optimization.
+ */
+const BEAM_EXIT_PROGRESS = 130;
+
 type UseHeroScanAnimationResult = {
   readonly scanProgress: number;
   readonly isOptimized: boolean;
@@ -66,18 +75,24 @@ export function useHeroScanAnimation(
       }
 
       const elapsed = timestamp - startTimeRef.current;
-      const progress = Math.min((elapsed / SCAN_DURATION_MS) * 100, 100);
+      // Allow progress to go beyond 100 for beam exit animation
+      const exitDuration =
+        SCAN_DURATION_MS * (BEAM_EXIT_PROGRESS / OPTIMIZE_PROGRESS);
+      const progress = Math.min(
+        (elapsed / exitDuration) * BEAM_EXIT_PROGRESS,
+        BEAM_EXIT_PROGRESS,
+      );
 
       setScanProgress(progress);
 
       // Trigger decode animation when progress reaches threshold
       setShouldStartDecode((prev) => prev || progress >= DECODE_START_PROGRESS);
 
-      // Mark as optimized when scan completes
-      setIsOptimized((prev) => prev || progress >= 100);
+      // Mark as optimized when scan reaches 100%
+      setIsOptimized((prev) => prev || progress >= OPTIMIZE_PROGRESS);
 
-      // Continue animation until complete
-      if (progress < 100) {
+      // Continue animation until beam fully exits
+      if (progress < BEAM_EXIT_PROGRESS) {
         animationRef.current = requestAnimationFrame(animate);
       }
     };
