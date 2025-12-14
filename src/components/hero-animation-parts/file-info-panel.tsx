@@ -31,9 +31,25 @@ export function FileInfoPanel({
       <StatRow label="Size" isOptimized={isOptimized}>
         {currentSize.toLocaleString()}KB
       </StatRow>
-      <StatRow label="Saved" isOptimized={isOptimized}>
-        {reductionPercent > 0 ? `${reductionPercent}%` : "0%"}
-      </StatRow>
+      <HighlightValue
+        isHighlighted={isOptimized}
+        delay={OPTIMIZATION_HIGHLIGHT_DELAY_MS}
+        className={cn(
+          "text-accent text-right text-sm text-[10px] font-semibold text-nowrap",
+        )}
+      >
+        Reduced by{" "}
+        <div
+          className={cn(
+            "inline-block w-20 text-right text-xs tabular-nums",
+            isOptimized && "text-glow-stay delay-500",
+          )}
+        >
+          <span className={cn(isOptimized && "animate-underline-grow")}>
+            {reductionPercent > 0 ? `${reductionPercent}` : "0"}% memory
+          </span>
+        </div>
+      </HighlightValue>
     </div>
   );
 }
@@ -44,22 +60,19 @@ type StatRowProps = {
   readonly children: React.ReactNode;
 };
 
-function StatRow({ label, isOptimized, children }: StatRowProps) {
+function StatRow({ label, children }: StatRowProps) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-accent/90 w-18 text-right text-[10px] font-bold tracking-wide uppercase">
+      <span className="text-accent w-18 text-right text-[10px] font-bold tracking-wide uppercase">
         {label}:
       </span>
-      <HighlightValue
-        isHighlighted={isOptimized}
-        delay={OPTIMIZATION_HIGHLIGHT_DELAY_MS}
+      <span
         className={cn(
-          "w-12 text-right text-[10px] font-semibold tabular-nums transition-colors duration-300",
-          isOptimized ? "text-accent/90" : "text-accent/50",
+          "text-accent w-12 text-right text-[10px] font-semibold tabular-nums",
         )}
       >
         {children}
-      </HighlightValue>
+      </span>
     </div>
   );
 }
