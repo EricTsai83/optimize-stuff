@@ -837,3 +837,232 @@
 .group:hover .icon-image {
   animation: icon-image-animate 0.5s ease-in-out;
 }
+
+/* ==========================================================================
+   12. Text Decode Animation Effects
+   Cyber-style text decoding animations
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   12.1 Scan Line Animation
+   Horizontal scanning line effect for text decode
+   -------------------------------------------------------------------------- */
+@keyframes scan-line {
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 0.15s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
+   12.x Hero Skeleton Soundwave
+   Center-out expanding rings like audio waves emanating from center
+   -------------------------------------------------------------------------- */
+@keyframes hero-soundwave {
+  0% {
+    transform: scale(0.15);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-hero-soundwave {
+  animation: hero-soundwave 2s cubic-bezier(0.1, 0, 0.3, 1) infinite;
+}
+
+/* --------------------------------------------------------------------------
+   12.1 Hero Card Border Flash
+   Border highlight pulse used on "optimized" transition
+   -------------------------------------------------------------------------- */
+@keyframes hero-card-border-flash {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+  15% {
+    opacity: 1;
+    box-shadow:
+      0 0 32px rgba(16, 185, 129, 0.5),
+      0 0 60px rgba(16, 185, 129, 0.25),
+      inset 0 0 20px rgba(16, 185, 129, 0.15);
+  }
+  40% {
+    opacity: 0.7;
+    box-shadow:
+      0 0 24px rgba(16, 185, 129, 0.35),
+      0 0 45px rgba(16, 185, 129, 0.18),
+      inset 0 0 14px rgba(16, 185, 129, 0.1);
+  }
+  65% {
+    opacity: 0.35;
+    box-shadow:
+      0 0 16px rgba(16, 185, 129, 0.2),
+      0 0 30px rgba(16, 185, 129, 0.1),
+      inset 0 0 8px rgba(16, 185, 129, 0.05);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12.2 Character Decode Glow
+   Subtle glow effect for decoded characters
+   -------------------------------------------------------------------------- */
+@keyframes decode-glow {
+  0% {
+    text-shadow: 0 0 0 transparent;
+  }
+  50% {
+    text-shadow:
+      0 0 8px oklch(0.7 0.18 160 / 0.8),
+      0 0 16px oklch(0.7 0.18 160 / 0.4);
+  }
+  100% {
+    text-shadow: 0 0 6px oklch(0.7 0.18 160 / 0.5);
+  }
+}
+
+.animate-decode-glow {
+  animation: decode-glow 0.3s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
+   12.3 Matrix Rain Effect (Optional)
+   Falling characters effect for background decoration
+   -------------------------------------------------------------------------- */
+@keyframes matrix-fall {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.animate-matrix-fall {
+  animation: matrix-fall 2s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   12.4 Text Flicker Effect
+   Subtle flicker for cyberpunk feel
+   -------------------------------------------------------------------------- */
+@keyframes text-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  33% {
+    opacity: 0.95;
+  }
+  66% {
+    opacity: 0.98;
+  }
+}
+
+.animate-text-flicker {
+  animation: text-flicker 0.1s ease-in-out infinite;
+}
+
+/* --------------------------------------------------------------------------
+   12.5 Text Sweep Glow Effect
+   Quick flash up, smooth fade back
+   -------------------------------------------------------------------------- */
+@keyframes text-sweep-glow {
+  0% {
+    text-shadow:
+      0 0 8px oklch(0.7 0.18 160 / 0.4),
+      0 0 0 oklch(0.7 0.18 160 / 0),
+      0 0 0 oklch(1 0 0 / 0);
+    filter: brightness(1);
+  }
+  8% {
+    text-shadow:
+      0 0 14px oklch(0.85 0.2 160 / 0.8),
+      0 0 28px oklch(0.8 0.18 160 / 0.5),
+      0 0 6px oklch(1 0 0 / 0.4);
+    filter: brightness(1.4);
+  }
+  100% {
+    text-shadow:
+      0 0 8px oklch(0.7 0.18 160 / 0.4),
+      0 0 0 oklch(0.7 0.18 160 / 0),
+      0 0 0 oklch(1 0 0 / 0);
+    filter: brightness(1);
+  }
+}
+
+.animate-text-sweep-glow {
+  animation: text-sweep-glow 1.5s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+/* Static glow state for use after sweep animation completes */
+/* Light mode - subtle glow */
+.text-glow-stay {
+  text-shadow: 0 0 14px oklch(0.85 0.2 160 / 0.8);
+  filter: brightness(1.1);
+}
+
+/* Dark mode - stronger glow */
+.dark .text-glow-stay {
+  text-shadow:
+    0 0 14px oklch(0.85 0.2 160 / 0.8),
+    0 0 28px oklch(0.8 0.18 160 / 0.5),
+    0 0 6px oklch(1 0 0 / 0.4);
+  filter: brightness(1.4);
+}
+/* --------------------------------------------------------------------------
+   12.6 Animated Underline Grow Effect
+   Underline that grows from left to right using scaleX transform
+   -------------------------------------------------------------------------- */
+.animate-underline-grow {
+  position: relative;
+  display: inline-block;
+}
+
+.animate-underline-grow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: underline-grow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: inherit;
+}
+
+@keyframes underline-grow {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
